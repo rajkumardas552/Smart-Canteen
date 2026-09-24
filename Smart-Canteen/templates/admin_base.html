@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Admin Dashboard | Smart Canteen{% endblock %}</title>
+  
+  <!-- FontAwesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Custom Styling -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="admin-layout">
+
+  <!-- Desktop Admin Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="brand-logo" style="margin-bottom: 2rem; padding: 0.5rem;">
+      <i class="fa-solid fa-shield-halved"></i>
+      <span>Admin <span class="accent">Panel</span></span>
+    </div>
+
+    <ul class="nav-links" style="display: flex; flex-direction: column; gap: 0.5rem; width: 100%;">
+      <li>
+        <a href="{{ url_for('admin_dashboard') }}" class="{% if request.endpoint == 'admin_dashboard' %}active{% endif %}" style="display: flex; align-items: center; gap: 0.75rem; width: 100%;">
+          <i class="fa-solid fa-chart-line"></i> Dashboard
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('admin_orders') }}" class="{% if request.endpoint == 'admin_orders' %}active{% endif %}" style="display: flex; align-items: center; gap: 0.75rem; width: 100%;">
+          <i class="fa-solid fa-list-check"></i> Live Orders
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('kitchen') }}" class="{% if request.endpoint == 'kitchen' %}active{% endif %}" style="display: flex; align-items: center; gap: 0.75rem; width: 100%; color: var(--secondary-accent);">
+          <i class="fa-solid fa-fire"></i> Kitchen KDS
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('admin_students') }}" class="{% if request.endpoint == 'admin_students' %}active{% endif %}" style="display: flex; align-items: center; gap: 0.75rem; width: 100%;">
+          <i class="fa-solid fa-users"></i> Students Directory
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('admin_menu') }}" class="{% if request.endpoint == 'admin_menu' %}active{% endif %}" style="display: flex; align-items: center; gap: 0.75rem; width: 100%;">
+          <i class="fa-solid fa-utensils"></i> Food Menu
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('admin_offers') }}" class="{% if request.endpoint == 'admin_offers' %}active{% endif %}" style="display: flex; align-items: center; gap: 0.75rem; width: 100%;">
+          <i class="fa-solid fa-ticket"></i> Offers & Coupons
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('admin_payments') }}" class="{% if request.endpoint == 'admin_payments' %}active{% endif %}" style="display: flex; align-items: center; gap: 0.75rem; width: 100%;">
+          <i class="fa-solid fa-receipt"></i> Payment Logs
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('live_counter') }}" target="_blank" style="display: flex; align-items: center; gap: 0.75rem; width: 100%; color: var(--primary-accent);">
+          <i class="fa-solid fa-tv"></i> TV Token Board
+        </a>
+      </li>
+    </ul>
+
+    <div style="margin-top: auto; padding-top: 1.25rem; border-top: 1px solid var(--card-border);">
+      <a href="{{ url_for('admin_logout') }}" class="btn-danger" style="width: 100%; font-size: 0.85rem;">
+        <i class="fa-solid fa-right-from-bracket"></i> Logout Admin
+      </a>
+      <a href="{{ url_for('login') }}" style="display: block; text-align: center; font-size: 0.78rem; color: var(--text-muted); margin-top: 0.75rem;">
+        Switch to Student Login
+      </a>
+    </div>
+  </aside>
+
+  <!-- Admin Main Content Area -->
+  <main class="admin-main">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="alert-container">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+              <span><i class="fa-solid fa-circle-info"></i> {{ message }}</span>
+              <button onclick="this.parentElement.remove()" style="background:none; border:none; color:inherit; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

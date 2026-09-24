@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+
+{% block title %}Menu | Smart Canteen{% endblock %}
+
+{% block content %}
+<!-- Top Bar with Back Button -->
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+  <div style="display: flex; align-items: center; gap: 1rem;">
+    <a href="{{ url_for('home') }}" class="icon-btn" title="Back to Home">
+      <i class="fa-solid fa-arrow-left"></i>
+    </a>
+    <div>
+      <h1 style="font-size: 1.6rem; font-weight: 800;">Food Menu</h1>
+      <p style="color: var(--text-muted); font-size: 0.88rem;">Freshly prepared for college students</p>
+    </div>
+  </div>
+</div>
+
+<!-- Search Bar -->
+<div class="solid-card" style="padding: 1rem; margin-bottom: 1.25rem;">
+  <form action="{{ url_for('menu') }}" method="GET" style="display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap;">
+    <input type="hidden" name="category" value="{{ selected_category }}">
+    <input type="hidden" name="pill" value="{{ filter_pill }}">
+    
+    <div style="position: relative; flex: 1; min-width: 200px;">
+      <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+      <input type="text" name="search" class="form-control" placeholder="Search menu..." value="{{ search_query }}" style="padding-left: 40px; font-size: 0.9rem;">
+    </div>
+
+    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; user-select: none; background: var(--bg-main); padding: 0.6rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--card-border);">
+      <input type="checkbox" name="veg" value="1" {% if veg_only %}checked{% endif %} onchange="this.form.submit()" style="accent-color: var(--success);">
+      <span style="font-size: 0.88rem; font-weight: 700; color: var(--success);"><i class="fa-solid fa-leaf"></i> Veg Only</span>
+    </label>
+
+    <button type="submit" class="btn-primary btn-sm">Search</button>
+  </form>
+</div>
+
+<!-- Quick Filter Pills Bar -->
+<div style="margin-bottom: 1rem; display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.4rem;">
+  <a href="{{ url_for('menu', category=selected_category, veg='1' if veg_only else '0', search=search_query, pill='all') }}" class="btn-secondary btn-sm {% if filter_pill == 'all' %}active{% endif %}" style="{% if filter_pill == 'all' %}border-color: var(--primary-accent); color: var(--primary-accent); font-weight: 800;{% endif %}">
+    All Items
+  </a>
+  <a href="{{ url_for('menu', category=selected_category, veg='1' if veg_only else '0', search=search_query, pill='under50') }}" class="btn-secondary btn-sm {% if filter_pill == 'under50' %}active{% endif %}" style="{% if filter_pill == 'under50' %}border-color: var(--primary-accent); color: var(--primary-accent); font-weight: 800;{% endif %}">
+    💰 Under ₹50
+  </a>
+  <a href="{{ url_for('menu', category=selected_category, veg='1' if veg_only else '0', search=search_query, pill='protein') }}" class="btn-secondary btn-sm {% if filter_pill == 'protein' %}active{% endif %}" style="{% if filter_pill == 'protein' %}border-color: var(--primary-accent); color: var(--primary-accent); font-weight: 800;{% endif %}">
+    🌱 High Protein
+  </a>
+  <a href="{{ url_for('menu', category=selected_category, veg='1' if veg_only else '0', search=search_query, pill='jain') }}" class="btn-secondary btn-sm {% if filter_pill == 'jain' %}active{% endif %}" style="{% if filter_pill == 'jain' %}border-color: var(--primary-accent); color: var(--primary-accent); font-weight: 800;{% endif %}">
+    🌾 Jain Available
+  </a>
+  <a href="{{ url_for('menu', category=selected_category, veg='1' if veg_only else '0', search=search_query, pill='spicy') }}" class="btn-secondary btn-sm {% if filter_pill == 'spicy' %}active{% endif %}" style="{% if filter_pill == 'spicy' %}border-color: var(--primary-accent); color: var(--primary-accent); font-weight: 800;{% endif %}">
+    🔥 Spicy Favorites
+  </a>
+</div>
+
+<!-- Category Tabs -->
+<div style="margin-bottom: 1.5rem; overflow-x: auto; white-space: nowrap; padding-bottom: 0.5rem;">
+  <div style="display: inline-flex; gap: 0.6rem;">
+    {% for cat in categories %}
+    <a href="{{ url_for('menu', category=cat, veg='1' if veg_only else '0', search=search_query, pill=filter_pill) }}" 
+       class="btn-secondary btn-sm {% if selected_category == cat %}active{% endif %}"
+       style="{% if selected_category == cat %}background: var(--primary-accent); color: #000; border-color: var(--primary-accent); font-weight: 800;{% endif %}">
+      {{ cat }}
+    </a>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Food Menu Grid -->
+<div class="food-grid">
+  {% for item in items %}
+  <div class="food-card glass-card-interactive">
+    <div class="food-card-img-wrapper">
+      <img src="{{ item.image_url }}" alt="{{ item.name }}" class="food-card-img" loading="lazy">
+      <span class="veg-badge {% if item.is_veg %}veg{% else %}non-veg{% endif %}">
+        <i class="fa-solid fa-circle" style="font-size: 7px;"></i>
+        {% if item.is_veg %}Veg{% else %}Non-Veg{% endif %}
+      </span>
+      {% if not item.is_available %}
+      <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; font-weight: 800; color: var(--danger); font-size: 0.9rem; text-transform: uppercase;">
+        Sold Out
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="food-card-body">
+      <div>
+        <a href="{{ url_for('food_details', item_id=item.id) }}">
+          <h4 class="food-title">{{ item.name }}</h4>
+        </a>
+        <p class="food-desc">{{ item.description }}</p>
+      </div>
+
+      <div class="food-meta">
+        <div>
+          <div class="food-price">₹{{ '%.0f'|format(item.price) }}</div>
+          <div class="rating-badge">
+            <i class="fa-solid fa-star"></i> {{ item.rating }} • <span style="color: var(--text-muted); font-size: 0.75rem;">{{ item.prep_time }}</span>
+          </div>
+          <div class="badge-tag-row">
+            {% if loop.index % 4 == 1 %}
+            <span class="badge-tag tag-stock-urgency"><i class="fa-solid fa-fire"></i> Only 3 Left!</span>
+            {% elif loop.index % 4 == 2 %}
+            <span class="badge-tag tag-fresh-batch"><i class="fa-solid fa-sparkles"></i> Fresh Hot Batch</span>
+            {% elif loop.index % 4 == 3 %}
+            <span class="badge-tag tag-bestseller"><i class="fa-solid fa-crown"></i> #1 Bestseller</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <div>
+          {% if item.is_available %}
+            {% set in_cart_qty = cart_quantities.get(item.id, 0) %}
+            {% if in_cart_qty > 0 %}
+              <div class="qty-control">
+                <button class="qty-btn" onclick="updateCartQty({{ item.id }}, 'decrease')">-</button>
+                <span class="qty-val">{{ in_cart_qty }}</span>
+                <button class="qty-btn" onclick="updateCartQty({{ item.id }}, 'increase')">+</button>
+              </div>
+            {% else %}
+              <button class="btn-primary btn-sm btn-add-cart" data-id="{{ item.id }}">
+                <i class="fa-solid fa-plus"></i> Add
+              </button>
+            {% endif %}
+          {% else %}
+            <button class="btn-secondary btn-sm" disabled style="opacity: 0.5;">Unavailable</button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem;" class="solid-card">
+    <i class="fa-solid fa-utensils" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+    <h3>No food items found</h3>
+    <p style="color: var(--text-muted); margin-top: 0.4rem;">Try searching for something else or clear filters.</p>
+    <a href="{{ url_for('menu') }}" class="btn-secondary btn-sm" style="margin-top: 1rem;">Clear Filters</a>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Bottom Slide-Up Quick Cart Drawer -->
+{% if cart_count and cart_count > 0 %}
+<div style="position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 650px; background: var(--card-elevated); border: 2px solid var(--primary-accent); border-radius: 16px; padding: 0.85rem 1.2rem; display: flex; align-items: center; justify-content: space-between; z-index: 999; box-shadow: var(--shadow-glow), var(--shadow-md);">
+  <div style="display: flex; align-items: center; gap: 0.8rem;">
+    <div style="background: var(--primary-accent); color: #000; font-weight: 800; padding: 6px 12px; border-radius: 8px; font-size: 0.9rem;">
+      {{ cart_count }} Items
+    </div>
+    <div>
+      <div style="font-size: 1.05rem; font-weight: 800; color: var(--primary-accent);">
+        ₹{{ '%.2f'|format(cart_subtotal) }}
+      </div>
+      <div style="font-size: 0.75rem; color: var(--text-muted);">Taxes & fees calculated at checkout</div>
+    </div>
+  </div>
+
+  <a href="{{ url_for('cart') }}" class="btn-primary" style="padding: 0.6rem 1.2rem; font-size: 0.95rem;">
+    View Cart <i class="fa-solid fa-arrow-right"></i>
+  </a>
+</div>
+{% endif %}
+
+{% endblock %}

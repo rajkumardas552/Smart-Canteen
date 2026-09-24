@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080D12">
+  <title>{% block title %}Smart Canteen | College Food Ordering System{% endblock %}</title>
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  
+  <!-- FontAwesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Custom Styling -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  <!-- Unique Animated Mesh Background Overlay -->
+  <div class="bg-mesh-container" aria-hidden="true">
+    <div class="mesh-orb mesh-orb-1"></div>
+    <div class="mesh-orb mesh-orb-2"></div>
+    <div class="mesh-orb mesh-orb-3"></div>
+    <div class="bg-grid-overlay"></div>
+  </div>
+
+  {% if request.endpoint not in ['login', 'admin_login', 'live_counter', 'kitchen'] %}
+  <!-- Top Navigation Header: Floating Glass Capsule Island -->
+  <header class="nav-header-wrapper">
+    <nav class="glass-nav">
+      <div class="nav-container">
+        <div class="nav-brand-section">
+          <a href="{{ url_for('home') }}" class="brand-logo">
+            <div class="brand-icon-wrapper">
+              <i class="fa-solid fa-utensils"></i>
+            </div>
+            <span>Smart<span class="accent">Canteen</span></span>
+          </a>
+
+          <!-- Live Canteen Rush Badge -->
+          <div id="live-rush-indicator" class="live-rush-badge rush-low" title="Click to refresh canteen crowd status">
+            <span class="rush-pulse"></span>
+            <span id="rush-text">🟢 Low Rush (~5m)</span>
+          </div>
+        </div>
+
+        <ul class="nav-links">
+          <li>
+            <a href="{{ url_for('home') }}" class="nav-item-link {% if request.endpoint == 'home' %}active{% endif %}">
+              <i class="fa-solid fa-house"></i> <span>Home</span>
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('menu') }}" class="nav-item-link {% if request.endpoint == 'menu' %}active{% endif %}">
+              <i class="fa-solid fa-burger"></i> <span>Menu</span>
+              <span class="nav-mini-badge badge-amber">TRENDING</span>
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('orders') }}" class="nav-item-link {% if request.endpoint == 'orders' %}active{% endif %}">
+              <i class="fa-solid fa-clock-rotate-left"></i> <span>My Orders</span>
+              <span class="nav-mini-badge badge-red">HOT</span>
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('leaderboard') }}" class="nav-item-link {% if request.endpoint == 'leaderboard' %}active{% endif %}">
+              <i class="fa-solid fa-trophy"></i> <span>Leaderboard</span>
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('kiosk') }}" target="_blank" class="nav-item-link nav-item-kiosk">
+              <i class="fa-solid fa-desktop"></i> <span>Kiosk</span>
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('profile') }}" class="nav-item-link {% if request.endpoint == 'profile' %}active{% endif %}">
+              <i class="fa-solid fa-user"></i> <span>Profile</span>
+            </a>
+          </li>
+        </ul>
+
+        <div class="nav-actions">
+          <button type="button" onclick="toggleLightDarkMode()" class="icon-btn" title="Toggle Light / Dark Mode">
+            <i class="fa-solid fa-circle-half-stroke"></i>
+          </button>
+          <a href="{{ url_for('cart') }}" class="icon-btn cart-btn" title="View Cart">
+            <i class="fa-solid fa-basket-shopping"></i>
+            <span class="badge-count" style="display: {% if cart_count and cart_count > 0 %}flex{% else %}none{% endif %};">{{ cart_count or 0 }}</span>
+          </a>
+          {% if session.get('student_roll') %}
+          <a href="{{ url_for('logout') }}" class="icon-btn logout-btn" title="Logout">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Live Campus Activity Ticker Stream -->
+  <div class="live-ticker-wrapper">
+    <div class="live-ticker-label">
+      <span class="pulse-dot"></span> LIVE
+    </div>
+    <div class="live-ticker-content" id="live-ticker-feed">
+      <span>🔥 <b>Rohan (CSE001)</b> placed an order 12s ago • ⚡ <b>Cold Coffee Float</b> trending today • 👨‍🍳 Counter #1 serving under 8 mins</span>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Main Container -->
+  <main class="main-wrapper">
+    <!-- Flash Messages Container -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="alert-container">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+              <span><i class="fa-solid fa-circle-info"></i> {{ message }}</span>
+              <button onclick="this.parentElement.remove()" style="background:none; border:none; color:inherit; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  {% if request.endpoint not in ['login', 'admin_login', 'live_counter', 'kitchen'] and not request.path.startswith('/admin') %}
+  <!-- Mobile Fixed Bottom Navigation -->
+  <nav class="mobile-bottom-nav">
+    <a href="{{ url_for('home') }}" class="mobile-nav-item {% if request.endpoint == 'home' %}active{% endif %}">
+      <i class="fa-solid fa-house"></i>
+      <span>Home</span>
+    </a>
+    <a href="{{ url_for('menu') }}" class="mobile-nav-item {% if request.endpoint == 'menu' %}active{% endif %}">
+      <i class="fa-solid fa-burger"></i>
+      <span>Menu</span>
+    </a>
+    <a href="{{ url_for('cart') }}" class="mobile-nav-item {% if request.endpoint == 'cart' %}active{% endif %}">
+      <i class="fa-solid fa-basket-shopping"></i>
+      <span>Cart</span>
+      <span class="badge-count" style="display: {% if cart_count and cart_count > 0 %}flex{% else %}none{% endif %}; position: absolute; top: 2px; right: 8px;">{{ cart_count or 0 }}</span>
+    </a>
+    <a href="{{ url_for('orders') }}" class="mobile-nav-item {% if request.endpoint == 'orders' %}active{% endif %}">
+      <i class="fa-solid fa-clock-rotate-left"></i>
+      <span>Orders</span>
+    </a>
+    <a href="{{ url_for('profile') }}" class="mobile-nav-item {% if request.endpoint in ['profile', 'student_details', 'settings'] %}active{% endif %}">
+      <i class="fa-solid fa-user"></i>
+      <span>Profile</span>
+    </a>
+  </nav>
+  {% endif %}
+
+  <!-- Custom Scripts -->
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/static/sw.js').catch(err => console.log('PWA Service Worker Error:', err));
+    }
+  </script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

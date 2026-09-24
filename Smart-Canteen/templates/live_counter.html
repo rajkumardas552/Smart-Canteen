@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Canteen Token Display Screen | Smart Canteen</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    body {
+      background-color: #05080C;
+      padding: 0;
+      margin: 0;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    .tv-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      height: 100vh;
+      gap: 2px;
+      background: var(--card-border);
+    }
+    .tv-column {
+      padding: 2.5rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .tv-header {
+      font-size: 1.8rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    .token-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1.25rem;
+      overflow-y: auto;
+    }
+    .token-card {
+      padding: 1.5rem;
+      border-radius: var(--radius-md);
+      text-align: center;
+      font-size: 2.2rem;
+      font-weight: 800;
+      font-family: monospace;
+      letter-spacing: 0.05em;
+    }
+    .token-preparing {
+      background: rgba(245, 158, 11, 0.12);
+      border: 2px solid var(--warning);
+      color: var(--warning);
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+    }
+    .token-ready {
+      background: rgba(34, 197, 94, 0.18);
+      border: 2px solid var(--success);
+      color: var(--success);
+      box-shadow: 0 0 30px rgba(34, 197, 94, 0.35);
+      animation: pulseGlow 1.5s infinite alternate;
+    }
+    @keyframes pulseGlow {
+      from { transform: scale(1); }
+      to { transform: scale(1.03); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div style="background: var(--bg-secondary); padding: 1rem 2.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border);">
+    <div class="brand-logo" style="font-size: 1.6rem;">
+      <i class="fa-solid fa-utensils"></i>
+      <span>Smart <span class="accent">Canteen Token Board</span></span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <span style="color: var(--text-muted); font-size: 0.9rem; font-weight: 600;"><i class="fa-regular fa-clock"></i> Live Updates Active</span>
+      <a href="{{ url_for('home') }}" class="btn-secondary btn-sm">Exit TV Mode</a>
+    </div>
+  </div>
+
+  <div class="tv-container">
+    
+    <!-- LEFT: NOW PREPARING -->
+    <div class="tv-column" style="background: #080D12;">
+      <div class="tv-header" style="color: var(--warning);">
+        <i class="fa-solid fa-fire fa-spin"></i> Now Preparing
+      </div>
+
+      <div class="token-grid" id="preparing-tokens-container">
+        {% for token in tokens.preparing %}
+        <div class="token-card token-preparing">
+          #{{ token }}
+        </div>
+        {% else %}
+        <div style="color: var(--text-muted); font-size: 1.1rem;">No orders currently cooking.</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- RIGHT: READY FOR PICKUP -->
+    <div class="tv-column" style="background: #0A121A;">
+      <div class="tv-header" style="color: var(--success);">
+        <i class="fa-solid fa-bell"></i> Ready For Pickup!
+      </div>
+
+      <div class="token-grid" id="ready-tokens-container">
+        {% for token in tokens.ready %}
+        <div class="token-card token-ready">
+          #{{ token }}
+        </div>
+        {% else %}
+        <div style="color: var(--text-muted); font-size: 1.1rem;">No orders waiting at pickup.</div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    setInterval(() => {
+      fetch('/api/live-counter')
+        .then(res => res.json())
+        .then(data => {
+          const prepContainer = document.getElementById('preparing-tokens-container');
+          const readyContainer = document.getElementById('ready-tokens-container');
+          
+          if (data.preparing.length > 0) {
+            prepContainer.innerHTML = data.preparing.map(t => `<div class="token-card token-preparing">#${t}</div>`).join('');
+          } else {
+            prepContainer.innerHTML = `<div style="color: var(--text-muted); font-size: 1.1rem;">No orders currently cooking.</div>`;
+          }
+
+          if (data.ready.length > 0) {
+            readyContainer.innerHTML = data.ready.map(t => `<div class="token-card token-ready">#${t}</div>`).join('');
+          } else {
+            readyContainer.innerHTML = `<div style="color: var(--text-muted); font-size: 1.1rem;">No orders waiting at pickup.</div>`;
+          }
+        })
+        .catch(err => console.log('Live counter error:', err));
+    }, 5000);
+  </script>
+</body>
+</html>

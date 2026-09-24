@@ -1,0 +1,155 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}Offers & Coupons | Smart Canteen Admin{% endblock %}
+
+{% block content %}
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.8rem;">
+  <div>
+    <h1 style="font-size: 1.8rem; font-weight: 800;">Offers & Coupons Management</h1>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">Create, configure, and manage promo codes for campus students</p>
+  </div>
+
+  <button class="btn-primary" onclick="openAddCouponModal()">
+    <i class="fa-solid fa-plus"></i> Add New Offer
+  </button>
+</div>
+
+<div class="solid-card" style="padding: 1.5rem;">
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Coupon Code</th>
+          <th>Title & Description</th>
+          <th>Discount Type</th>
+          <th>Discount Value</th>
+          <th>Min Order</th>
+          <th>Max Discount</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for coupon in coupons %}
+        <tr>
+          <td style="font-family: monospace; font-weight: 800; font-size: 1rem; color: var(--primary-accent);">
+            {{ coupon.code }}
+          </td>
+          <td>
+            <div style="font-weight: 700;">{{ coupon.title }}</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">{{ coupon.description }}</div>
+          </td>
+          <td>
+            <span class="status-pill status-preparing" style="font-size: 0.75rem; text-transform: uppercase;">{{ coupon.discount_type }}</span>
+          </td>
+          <td style="font-weight: 800;">
+            {% if coupon.discount_type == 'percent' %}{{ '%.0f'|format(coupon.discount_value) }}%{% else %}₹{{ '%.0f'|format(coupon.discount_value) }}{% endif %}
+          </td>
+          <td style="color: var(--text-muted);">₹{{ '%.0f'|format(coupon.minimum_order) }}</td>
+          <td style="color: var(--text-muted);">₹{{ '%.0f'|format(coupon.maximum_discount) }}</td>
+          <td>
+            {% if coupon.active %}
+            <span class="status-pill status-completed">Active</span>
+            {% else %}
+            <span class="status-pill status-cancelled">Disabled</span>
+            {% endif %}
+          </td>
+          <td>
+            <div style="display: flex; gap: 0.4rem;">
+              <form action="{{ url_for('admin_toggle_coupon', coupon_id=coupon.id) }}" method="POST">
+                <button type="submit" class="btn-secondary btn-sm" title="Toggle Active Status">
+                  <i class="fa-solid fa-power-off" style="color: {% if coupon.active %}var(--success){% else %}var(--danger){% endif %};"></i>
+                </button>
+              </form>
+              <form action="{{ url_for('admin_delete_coupon', coupon_id=coupon.id) }}" method="POST" onsubmit="return confirm('Delete this coupon code?')">
+                <button type="submit" class="btn-danger btn-sm" title="Delete Coupon">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No coupons configured yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add Coupon Modal -->
+<div id="add-coupon-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+      <h3 style="font-size: 1.3rem; font-weight: 800;">Add Promo Coupon</h3>
+      <button onclick="closeModal('add-coupon-modal')" style="background:none; border:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <form action="{{ url_for('admin_add_coupon') }}" method="POST">
+      <div class="form-group">
+        <label class="form-label">Coupon Code</label>
+        <input type="text" name="code" class="form-control" placeholder="e.g. FESTIVAL30" style="text-transform: uppercase;" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Offer Title</label>
+        <input type="text" name="title" class="form-control" placeholder="e.g. Festival Special" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <input type="text" name="description" class="form-control" placeholder="Get 30% off on all campus orders above ₹250">
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label class="form-label">Discount Type</label>
+          <select name="discount_type" class="form-control" required>
+            <option value="percent">Percentage (%)</option>
+            <option value="flat">Flat Amount (₹)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Discount Value</label>
+          <input type="number" step="1" name="discount_value" class="form-control" placeholder="20" required>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label class="form-label">Minimum Order (₹)</label>
+          <input type="number" step="1" name="minimum_order" class="form-control" placeholder="199" value="100">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Max Discount Cap (₹)</label>
+          <input type="number" step="1" name="maximum_discount" class="form-control" placeholder="100" value="100">
+        </div>
+      </div>
+
+      <div style="margin-bottom: 1.5rem;">
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+          <input type="checkbox" name="active" checked style="accent-color: var(--primary-accent);">
+          <span style="font-weight: 700; font-size: 0.9rem;">Active Immediately</span>
+        </label>
+      </div>
+
+      <button type="submit" class="btn-primary" style="width: 100%;">Create Offer Coupon</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function openAddCouponModal() {
+    document.getElementById('add-coupon-modal').style.display = 'flex';
+  }
+  function closeModal(id) {
+    document.getElementById(id).style.display = 'none';
+  }
+</script>
+{% endblock %}

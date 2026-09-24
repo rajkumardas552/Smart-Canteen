@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}My Orders & Live Tracker | Smart Canteen{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 0 auto;">
+  
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+    <div>
+      <h1 style="font-size: 1.6rem; font-weight: 800; display: flex; align-items: center; gap: 0.6rem;">
+        <i class="fa-solid fa-clock-rotate-left" style="color: var(--primary-accent);"></i> My Orders & Live Tracker
+      </h1>
+      <p style="color: var(--text-muted); font-size: 0.88rem;">Track your ongoing kitchen prep status in real-time.</p>
+    </div>
+    <a href="{{ url_for('menu') }}" class="btn-primary btn-sm">
+      <i class="fa-solid fa-plus"></i> New Order
+    </a>
+  </div>
+
+  <!-- Order Status Filter Tabs -->
+  <div style="margin-bottom: 1.5rem; display: flex; gap: 0.6rem; overflow-x: auto; padding-bottom: 0.4rem;">
+    <a href="{{ url_for('orders', status='All') }}" class="btn-secondary btn-sm {% if status_filter == 'All' %}active{% endif %}" style="{% if status_filter == 'All' %}background: var(--primary-accent); color: #000; font-weight: 800;{% endif %}">
+      All Orders
+    </a>
+    <a href="{{ url_for('orders', status='Ongoing') }}" class="btn-secondary btn-sm {% if status_filter == 'Ongoing' %}active{% endif %}" style="{% if status_filter == 'Ongoing' %}background: var(--primary-accent); color: #000; font-weight: 800;{% endif %}">
+      🔥 Ongoing Queue
+    </a>
+    <a href="{{ url_for('orders', status='Completed') }}" class="btn-secondary btn-sm {% if status_filter == 'Completed' %}active{% endif %}" style="{% if status_filter == 'Completed' %}background: var(--primary-accent); color: #000; font-weight: 800;{% endif %}">
+      ✅ Completed
+    </a>
+    <a href="{{ url_for('orders', status='Cancelled') }}" class="btn-secondary btn-sm {% if status_filter == 'Cancelled' %}active{% endif %}" style="{% if status_filter == 'Cancelled' %}background: var(--primary-accent); color: #000; font-weight: 800;{% endif %}">
+      ❌ Cancelled
+    </a>
+  </div>
+
+  {% if orders %}
+  <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+    {% for order in orders %}
+    <div class="solid-card tilt-card" style="padding: 1.5rem; {% if order.status in ['Pending', 'Preparing', 'Ready'] %}border: 1px solid var(--primary-accent); box-shadow: var(--shadow-glow); background: var(--card-elevated);{% endif %}">
+      
+      <!-- Card Top Info -->
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--card-border);">
+        <div>
+          <div style="font-size: 1.2rem; font-weight: 900; color: var(--primary-accent); display: flex; align-items: center; gap: 0.5rem;">
+            <span>Order #{{ order.order_number }}</span>
+            <span style="font-size: 0.72rem; background: rgba(255,255,255,0.08); padding: 2px 8px; border-radius: 6px; color: var(--text-muted); font-weight: 600;">
+              {{ order.order_type }}
+            </span>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 3px;">
+            <i class="fa-regular fa-clock"></i> {{ order.order_date }} at {{ order.order_time }} • Slot: <strong>{{ order.pickup_slot or 'Instant Prep' }}</strong>
+          </div>
+        </div>
+
+        <div>
+          {% if order.status == 'Pending' %}
+            <span class="status-pill status-pending"><i class="fa-solid fa-hourglass-start"></i> Pending</span>
+          {% elif order.status == 'Preparing' %}
+            <span class="status-pill status-preparing"><i class="fa-solid fa-fire fa-spin"></i> Kitchen Prep</span>
+          {% elif order.status == 'Ready' %}
+            <span class="status-pill status-ready" style="animation: pulseGlow 1s infinite alternate;"><i class="fa-solid fa-bell"></i> Ready at Counter</span>
+          {% elif order.status == 'Completed' %}
+            <span class="status-pill status-completed"><i class="fa-solid fa-circle-check"></i> Completed</span>
+          {% else %}
+            <span class="status-pill status-cancelled"><i class="fa-solid fa-circle-xmark"></i> Cancelled</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Live Countdown Widget for Ongoing Orders -->
+      {% if order.status in ['Pending', 'Preparing'] %}
+      <div class="live-countdown-box">
+        <div>
+          <div style="font-size: 0.75rem; font-weight: 800; color: var(--primary-accent); text-transform: uppercase;">Est. Canteen Prep Countdown</div>
+          <div style="font-size: 0.88rem; font-weight: 700;">Chef is preparing your order fresh</div>
+        </div>
+        <div class="countdown-timer-value" id="timer-{{ order.id }}">08:45</div>
+      </div>
+      {% endif %}
+
+      <!-- Live Progress Step Bar for Ongoing & Completed Orders -->
+      {% if order.status in ['Pending', 'Preparing', 'Ready', 'Completed'] %}
+      <div class="order-steps" style="margin-bottom: 1.25rem;">
+        <div class="step-item {% if order.status in ['Pending', 'Preparing', 'Ready', 'Completed'] %}active{% endif %}">
+          <div class="step-icon"><i class="fa-solid fa-receipt"></i></div>
+          <span class="step-label">Placed</span>
+        </div>
+        <div class="step-item {% if order.status in ['Preparing', 'Ready', 'Completed'] %}active{% endif %}">
+          <div class="step-icon"><i class="fa-solid fa-fire"></i></div>
+          <span class="step-label">Kitchen Prep</span>
+        </div>
+        <div class="step-item {% if order.status in ['Ready', 'Completed'] %}active{% endif %}">
+          <div class="step-icon"><i class="fa-solid fa-bell"></i></div>
+          <span class="step-label">Ready</span>
+        </div>
+        <div class="step-item {% if order.status == 'Completed' %}active{% endif %}">
+          <div class="step-icon"><i class="fa-solid fa-check"></i></div>
+          <span class="step-label">Completed</span>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Item Preview -->
+      <div style="margin-bottom: 1rem; background: var(--card-bg); padding: 0.85rem; border-radius: 12px; border: 1px solid var(--card-border);">
+        <div style="font-size: 0.78rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.4rem;">Ordered Food Items</div>
+        <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+          {% for item in order['items'] %}
+          <div style="display: flex; justify-content: space-between; font-size: 0.92rem; font-weight: 600;">
+            <span><i class="fa-solid fa-angle-right" style="color: var(--primary-accent); font-size: 10px;"></i> {{ item.item_name }} × {{ item.quantity }}</span>
+            <span style="color: var(--text-muted);">₹{{ '%.0f'|format(item.price * item.quantity) }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Card Footer -->
+      <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 0.8rem; border-top: 1px solid var(--card-border); flex-wrap: wrap; gap: 0.8rem;">
+        <div>
+          <span style="font-size: 0.82rem; color: var(--text-muted);">Total Paid:</span>
+          <span style="font-size: 1.2rem; font-weight: 900; color: var(--primary-accent); margin-left: 6px;">₹{{ '%.2f'|format(order.total_amount) }}</span>
+        </div>
+
+        <div style="display: flex; gap: 0.6rem;">
+          <a href="{{ url_for('reorder', order_id=order.id) }}" class="btn-secondary btn-sm" style="background: rgba(255, 157, 0, 0.1); color: var(--primary-accent); border-color: rgba(255, 157, 0, 0.3);">
+            <i class="fa-solid fa-rotate-left"></i> Reorder
+          </a>
+          <a href="{{ url_for('order_details', order_id=order.id) }}" class="btn-primary btn-sm">
+            View Receipt <i class="fa-solid fa-chevron-right"></i>
+          </a>
+        </div>
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="solid-card" style="text-align: center; padding: 4rem 1rem;">
+    <i class="fa-solid fa-clock-rotate-left" style="font-size: 3.5rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+    <h2 style="font-size: 1.5rem; font-weight: 800;">No Orders Found</h2>
+    <p style="color: var(--text-muted); margin: 0.5rem 0 1.5rem 0;">You haven't placed any orders matching this status filter yet.</p>
+    <a href="{{ url_for('menu') }}" class="btn-primary">
+      Order Food Now <i class="fa-solid fa-utensils"></i>
+    </a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Countdown Timer simulation for ongoing orders
+  document.addEventListener('DOMContentLoaded', () => {
+    const timers = document.querySelectorAll('.countdown-timer-value');
+    timers.forEach(t => {
+      let seconds = 525; // 8 mins 45 secs
+      setInterval(() => {
+        if (seconds > 0) {
+          seconds--;
+          const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+          const secs = (seconds % 60).toString().padStart(2, '0');
+          t.textContent = `${mins}:${secs}`;
+        }
+      }, 1000);
+    });
+
+    // Auto refresh order status every 10 seconds
+    setInterval(() => {
+      fetch(window.location.href)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          const newContent = doc.querySelector('.main-wrapper');
+          if (newContent) {
+            // Check if status changed to ready
+            const readyPills = doc.querySelectorAll('.status-ready');
+            if (readyPills.length > 0 && typeof playReadyChime === 'function') {
+              // play ready chime
+            }
+          }
+        });
+    }, 12000);
+  });
+</script>
+{% endblock %}

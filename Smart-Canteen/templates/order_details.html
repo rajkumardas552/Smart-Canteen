@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Order #{{ order.order_number }} Details | Smart Canteen{% endblock %}
+
+{% block content %}
+<div style="max-width: 750px; margin: 0 auto;">
+  
+  <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+    <a href="{{ url_for('orders') }}" class="icon-btn" title="Back to Orders">
+      <i class="fa-solid fa-arrow-left"></i>
+    </a>
+    <h1 style="font-size: 1.6rem; font-weight: 800;">Order #{{ order.order_number }}</h1>
+  </div>
+
+  <div class="glass-card" style="padding: 2rem;">
+    
+    <!-- Header Summary -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--glass-border);">
+      <div>
+        <div style="font-size: 0.85rem; color: var(--text-muted);">Placed on</div>
+        <div style="font-size: 1rem; font-weight: 700;">{{ order.order_date }} at {{ order.order_time }}</div>
+        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
+          Type: <strong style="color: var(--text-primary);">{{ order.order_type }}</strong>
+        </div>
+      </div>
+
+      <div>
+        {% if order.status == 'Pending' %}
+          <span class="status-pill status-pending"><i class="fa-solid fa-hourglass-start"></i> Pending</span>
+        {% elif order.status == 'Preparing' %}
+          <span class="status-pill status-preparing"><i class="fa-solid fa-fire fa-spin"></i> Preparing</span>
+        {% elif order.status == 'Ready' %}
+          <span class="status-pill status-ready"><i class="fa-solid fa-bell"></i> Ready</span>
+        {% elif order.status == 'Completed' %}
+          <span class="status-pill status-completed"><i class="fa-solid fa-circle-check"></i> Completed</span>
+        {% else %}
+          <span class="status-pill status-cancelled"><i class="fa-solid fa-circle-xmark"></i> Cancelled</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Live Step Indicator Bar -->
+    {% if order.status in ['Pending', 'Preparing', 'Ready', 'Completed'] %}
+    <div class="order-steps" style="margin-bottom: 2rem;">
+      <div class="step-item {% if order.status in ['Pending', 'Preparing', 'Ready', 'Completed'] %}active{% endif %}">
+        <div class="step-icon"><i class="fa-solid fa-receipt"></i></div>
+        <span class="step-label">Placed</span>
+      </div>
+      <div class="step-item {% if order.status in ['Preparing', 'Ready', 'Completed'] %}active{% endif %}">
+        <div class="step-icon"><i class="fa-solid fa-kitchen-set"></i></div>
+        <span class="step-label">Preparing</span>
+      </div>
+      <div class="step-item {% if order.status in ['Ready', 'Completed'] %}active{% endif %}">
+        <div class="step-icon"><i class="fa-solid fa-bag-shopping"></i></div>
+        <span class="step-label">Ready</span>
+      </div>
+      <div class="step-item {% if order.status == 'Completed' %}active{% endif %}">
+        <div class="step-icon"><i class="fa-solid fa-check"></i></div>
+        <span class="step-label">Completed</span>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Student & Location Info -->
+    <div style="background: rgba(255, 255, 255, 0.03); padding: 1rem 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--glass-border); margin-bottom: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.9rem;">
+      <div>
+        <div style="color: var(--text-muted); font-size: 0.8rem;">Student Details</div>
+        <div style="font-weight: 700; margin-top: 2px;">{{ order.student_name }}</div>
+        <div style="color: var(--text-muted); font-size: 0.82rem;">Roll #: {{ order.roll_number }}</div>
+      </div>
+      <div>
+        <div style="color: var(--text-muted); font-size: 0.8rem;">Location / Address</div>
+        <div style="font-weight: 700; margin-top: 2px;">{{ order.delivery_address or 'Main Canteen Counter' }}</div>
+        <div style="color: var(--text-muted); font-size: 0.82rem;">Payment: {{ order.payment_method }}</div>
+      </div>
+    </div>
+
+    <!-- Ordered Items Breakdown -->
+    <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.8rem;">Items Breakdown</h3>
+    <div style="display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 1.5rem;">
+      {% for item in order['items'] %}
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.8rem; background: rgba(255, 255, 255, 0.04); border-radius: var(--radius-sm); border: 1px solid var(--glass-border);">
+        <div>
+          <div style="font-weight: 700; font-size: 0.95rem;">{{ item.item_name }} × {{ item.quantity }}</div>
+          {% if item.addons %}
+          <div style="font-size: 0.78rem; color: var(--primary-accent);">Add-ons: {{ item.addons|join(', ') }}</div>
+          {% endif %}
+          {% if item.instructions %}
+          <div style="font-size: 0.78rem; color: var(--text-muted); font-style: italic;">Note: "{{ item.instructions }}"</div>
+          {% endif %}
+        </div>
+        <div style="font-weight: 800; color: var(--primary-accent);">
+          ₹{{ '%.2f'|format(item.price * item.quantity) }}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Bill Total Summary -->
+    <div style="border-top: 1px solid var(--glass-border); padding-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.92rem;">
+      <div style="display: flex; justify-content: space-between; color: var(--text-muted);">
+        <span>Subtotal</span>
+        <span>₹{{ '%.2f'|format(order.subtotal) }}</span>
+      </div>
+
+      {% if order.discount > 0 %}
+      <div style="display: flex; justify-content: space-between; color: var(--success);">
+        <span>Discount</span>
+        <span>-₹{{ '%.2f'|format(order.discount) }}</span>
+      </div>
+      {% endif %}
+
+      <div style="display: flex; justify-content: space-between; color: var(--text-muted);">
+        <span>Service Fee</span>
+        <span>₹{{ '%.2f'|format(order.service_fee) }}</span>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: 800; border-top: 1px solid var(--glass-border); padding-top: 0.6rem; margin-top: 0.4rem;">
+        <span>Total Paid</span>
+        <span style="color: var(--primary-accent);">₹{{ '%.2f'|format(order.total_amount) }}</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

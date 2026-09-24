@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Digital Pass & Profile | Smart Canteen{% endblock %}
+
+{% block content %}
+<div style="max-width: 680px; margin: 0 auto;">
+  
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+    <h1 style="font-size: 1.6rem; font-weight: 800;">Student Digital Pass & Profile</h1>
+    <a href="{{ url_for('logout') }}" class="btn-danger btn-sm">
+      <i class="fa-solid fa-right-from-bracket"></i> Logout
+    </a>
+  </div>
+
+  <!-- VIRTUAL STUDENT DIGITAL CANTEEN PASS (Metallic Holographic Card) -->
+  <div class="student-pass-card" style="margin-bottom: 1.75rem;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
+      <div style="display: flex; align-items: center; gap: 0.6rem;">
+        <i class="fa-solid fa-graduation-cap" style="font-size: 1.6rem; color: var(--primary-accent);"></i>
+        <div>
+          <div style="font-weight: 800; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px;">CAMPUS CANTEEN PASS</div>
+          <div style="font-size: 0.75rem; color: rgba(255,255,255,0.7);">Official Student Food Identification</div>
+        </div>
+      </div>
+      <span style="background: rgba(34, 197, 94, 0.2); border: 1px solid #22C55E; color: #4ADE80; font-size: 0.72rem; font-weight: 800; padding: 0.2rem 0.6rem; border-radius: 12px; text-transform: uppercase;">
+        ● ACTIVE MEMBER
+      </span>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 1.2rem;">
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        {% if student and student.avatar_url %}
+        <img src="{{ student.avatar_url }}" alt="{{ student.name }}" style="width: 75px; height: 75px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-accent); box-shadow: 0 8px 20px rgba(255, 157, 0, 0.3);">
+        {% else %}
+        <div style="width: 75px; height: 75px; border-radius: 50%; background: var(--accent-gradient); display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 900; color: #000; box-shadow: 0 8px 20px rgba(255, 157, 0, 0.3); border: 3px solid rgba(255,255,255,0.2);">
+          {{ student.name[0] if student and student.name else 'S' }}
+        </div>
+        {% endif %}
+        <div>
+          <h2 style="font-size: 1.35rem; font-weight: 900; color: #FFFFFF; margin-bottom: 0.15rem;">
+            {{ student.name if student else session.get('student_name') }}
+          </h2>
+          <div style="font-family: monospace; font-size: 0.95rem; font-weight: 800; color: var(--primary-accent); margin-bottom: 0.35rem;">
+            ID: {{ student.roll_number if student else session.get('student_roll') }}
+          </div>
+          <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+            <span style="background: rgba(255,255,255,0.1); font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 700;">
+              {{ student.department or 'Computer Science' }}
+            </span>
+            <span style="background: rgba(255,255,255,0.1); font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 700;">
+              {{ student.semester or '3rd Sem' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Scan Student QR Code -->
+      <div style="text-align: center; background: #FFFFFF; padding: 6px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ student.roll_number if student else session.get('student_roll') }}" alt="Student Pass QR Code" style="width: 70px; height: 70px; display: block;">
+        <span style="font-size: 0.62rem; font-weight: 900; color: #000; display: block; margin-top: 2px;">SCAN AT COUNTER</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAMIFICATION & LOYALTY STATS GRID -->
+  <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.85rem; margin-bottom: 1.75rem;">
+    <div class="solid-card" style="padding: 1rem; text-align: center;">
+      <i class="fa-solid fa-crown" style="font-size: 1.4rem; color: #F59E0B; margin-bottom: 0.3rem;"></i>
+      <div style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">VIP Level</div>
+      <div style="font-size: 1rem; font-weight: 900; color: var(--text-primary);">Gold Foodie</div>
+    </div>
+
+    <div class="solid-card" style="padding: 1rem; text-align: center;">
+      <i class="fa-solid fa-coins" style="font-size: 1.4rem; color: #EC4899; margin-bottom: 0.3rem;"></i>
+      <div style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Coins</div>
+      <div style="font-size: 1rem; font-weight: 900; color: var(--text-primary);">280 Points</div>
+    </div>
+
+    <div class="solid-card" style="padding: 1rem; text-align: center;">
+      <i class="fa-solid fa-heart" style="font-size: 1.4rem; color: #EF4444; margin-bottom: 0.3rem;"></i>
+      <div style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Craved Item</div>
+      <div style="font-size: 0.85rem; font-weight: 900; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Paneer Roll</div>
+    </div>
+
+    <div class="solid-card" style="padding: 1rem; text-align: center;">
+      <i class="fa-solid fa-piggy-bank" style="font-size: 1.4rem; color: #10B981; margin-bottom: 0.3rem;"></i>
+      <div style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Saved</div>
+      <div style="font-size: 1rem; font-weight: 900; color: #10B981;">₹180 Saved</div>
+    </div>
+  </div>
+
+  <!-- Links List -->
+  <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+    
+    <!-- YOUR INFORMATION -->
+    <div class="solid-card" style="padding: 1.25rem;">
+      <div style="font-size: 0.82rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.8rem; letter-spacing: 0.05em;">
+        Account & Orders
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+        <a href="{{ url_for('orders') }}" class="solid-card" style="padding: 0.9rem 1rem; display: flex; align-items: center; justify-content: space-between; margin: 0; background: var(--card-elevated);">
+          <div style="display: flex; align-items: center; gap: 0.8rem; color: var(--text-primary); font-weight: 600;">
+            <i class="fa-solid fa-box-archive" style="color: var(--primary-accent); width: 20px;"></i> My Orders History
+          </div>
+          <span style="font-size: 0.85rem; color: var(--text-muted);">{{ total_orders }} orders <i class="fa-solid fa-chevron-right" style="margin-left: 6px;"></i></span>
+        </a>
+
+        <a href="{{ url_for('student_details') }}" class="solid-card" style="padding: 0.9rem 1rem; display: flex; align-items: center; justify-content: space-between; margin: 0; background: var(--card-elevated);">
+          <div style="display: flex; align-items: center; gap: 0.8rem; color: var(--text-primary); font-weight: 600;">
+            <i class="fa-solid fa-pen-to-square" style="color: var(--secondary-accent); width: 20px;"></i> Edit Profile & Phone
+          </div>
+          <i class="fa-solid fa-chevron-right" style="font-size: 0.85rem; color: var(--text-muted);"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- PREFERENCES & SETTINGS -->
+    <div class="solid-card" style="padding: 1.25rem;">
+      <div style="font-size: 0.82rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.8rem; letter-spacing: 0.05em;">
+        Preferences & Theme
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+        <a href="{{ url_for('settings') }}" class="solid-card" style="padding: 0.9rem 1rem; display: flex; align-items: center; justify-content: space-between; margin: 0; background: var(--card-elevated);">
+          <div style="display: flex; align-items: center; gap: 0.8rem; color: var(--text-primary); font-weight: 600;">
+            <i class="fa-solid fa-palette" style="color: var(--warning); width: 20px;"></i> Theme & Accent Colors
+          </div>
+          <i class="fa-solid fa-chevron-right" style="font-size: 0.85rem; color: var(--text-muted);"></i>
+        </a>
+
+        <a href="{{ url_for('student_details') }}" class="solid-card" style="padding: 0.9rem 1rem; display: flex; align-items: center; justify-content: space-between; margin: 0; background: var(--card-elevated);">
+          <div style="display: flex; align-items: center; gap: 0.8rem; color: var(--text-primary); font-weight: 600;">
+            <i class="fa-solid fa-utensils" style="color: var(--success); width: 20px;"></i> Dietary Preference
+          </div>
+          <span style="font-size: 0.85rem; color: var(--text-muted);">{{ student.dietary_pref if student else 'No Preference' }} <i class="fa-solid fa-chevron-right" style="margin-left: 6px;"></i></span>
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

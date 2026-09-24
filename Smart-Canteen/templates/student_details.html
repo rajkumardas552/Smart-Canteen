@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block title %}Complete Your Profile | Smart Canteen{% endblock %}
+
+{% block content %}
+<div style="max-width: 750px; margin: 2rem auto;">
+  <div class="glass-card" style="padding: 2.5rem;">
+    
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <div style="width: 60px; height: 60px; background: rgba(255, 157, 0, 0.15); border: 1px solid var(--primary-accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto;">
+        <i class="fa-solid fa-id-card-clip" style="font-size: 1.8rem; color: var(--primary-accent);"></i>
+      </div>
+      <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 0.4rem;">Complete Your Profile</h2>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">Tell us a little about yourself to personalize your canteen orders.</p>
+    </div>
+
+    <form action="{{ url_for('student_details') }}" method="POST">
+      
+      <!-- Student Avatar Photo Selector -->
+      <div class="form-group" style="margin-bottom: 1.5rem;">
+        <label class="form-label"><i class="fa-solid fa-camera" style="color: var(--primary-accent);"></i> Student Profile Avatar Photo</label>
+        <div style="display: flex; gap: 0.8rem; align-items: center; margin-bottom: 0.6rem;">
+          <input type="url" id="avatar_url" name="avatar_url" class="form-control" placeholder="Paste custom photo URL or pick preset below" value="{{ student.avatar_url if student else '' }}">
+        </div>
+        <div style="display: flex; gap: 0.6rem; overflow-x: auto; padding-bottom: 0.3rem;">
+          <button type="button" onclick="document.getElementById('avatar_url').value='https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'" class="btn-secondary btn-sm" style="border-radius: 20px;">👩 Student Girl</button>
+          <button type="button" onclick="document.getElementById('avatar_url').value='https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&auto=format&fit=crop&q=80'" class="btn-secondary btn-sm" style="border-radius: 20px;">👨 Student Boy</button>
+          <button type="button" onclick="document.getElementById('avatar_url').value='https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80'" class="btn-secondary btn-sm" style="border-radius: 20px;">👨‍💻 Techie</button>
+          <button type="button" onclick="document.getElementById('avatar_url').value='https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&auto=format&fit=crop&q=80'" class="btn-secondary btn-sm" style="border-radius: 20px;">🎧 Cool Vibes</button>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+        
+        <div class="form-group">
+          <label class="form-label" for="name">Full Name</label>
+          <input type="text" id="name" name="name" class="form-control" value="{{ student.name if student else session_name }}" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="roll_number">Roll Number</label>
+          <input type="text" id="roll_number" name="roll_number" class="form-control" value="{{ student.roll_number if student else session_roll }}" readonly style="background: rgba(255,255,255,0.02); opacity: 0.8;">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="department">Department</label>
+          <select id="department" name="department" class="form-control" required>
+            <option value="" disabled {% if not student or not student.department %}selected{% endif %}>Select Department</option>
+            <option value="Computer Science & Engineering" {% if student and student.department == 'Computer Science & Engineering' %}selected{% endif %}>Computer Science & Engineering</option>
+            <option value="Electronics & Communication" {% if student and student.department == 'Electronics & Communication' %}selected{% endif %}>Electronics & Communication</option>
+            <option value="Mechanical Engineering" {% if student and student.department == 'Mechanical Engineering' %}selected{% endif %}>Mechanical Engineering</option>
+            <option value="Civil Engineering" {% if student and student.department == 'Civil Engineering' %}selected{% endif %}>Civil Engineering</option>
+            <option value="Information Technology" {% if student and student.department == 'Information Technology' %}selected{% endif %}>Information Technology</option>
+            <option value="Business Administration" {% if student and student.department == 'Business Administration' %}selected{% endif %}>Business Administration</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="semester">Semester</label>
+          <select id="semester" name="semester" class="form-control" required>
+            <option value="" disabled {% if not student or not student.semester %}selected{% endif %}>Select Semester</option>
+            <option value="1st Semester" {% if student and student.semester == '1st Semester' %}selected{% endif %}>1st Semester</option>
+            <option value="2nd Semester" {% if student and student.semester == '2nd Semester' %}selected{% endif %}>2nd Semester</option>
+            <option value="3rd Semester" {% if student and student.semester == '3rd Semester' %}selected{% endif %}>3rd Semester</option>
+            <option value="4th Semester" {% if student and student.semester == '4th Semester' %}selected{% endif %}>4th Semester</option>
+            <option value="5th Semester" {% if student and student.semester == '5th Semester' %}selected{% endif %}>5th Semester</option>
+            <option value="6th Semester" {% if student and student.semester == '6th Semester' %}selected{% endif %}>6th Semester</option>
+            <option value="7th Semester" {% if student and student.semester == '7th Semester' %}selected{% endif %}>7th Semester</option>
+            <option value="8th Semester" {% if student and student.semester == '8th Semester' %}selected{% endif %}>8th Semester</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="phone">Phone Number</label>
+          <input type="tel" id="phone" name="phone" class="form-control" placeholder="+91 9876543210" value="{{ student.phone if student else '' }}" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="student_type">Hostel / Day Scholar</label>
+          <select id="student_type" name="student_type" class="form-control" required>
+            <option value="Day Scholar" {% if student and student.student_type == 'Day Scholar' %}selected{% endif %}>Day Scholar</option>
+            <option value="Hostel Resident" {% if student and student.student_type == 'Hostel Resident' %}selected{% endif %}>Hostel Resident</option>
+          </select>
+        </div>
+
+      </div>
+
+      <div class="form-group" style="margin-top: 1rem;">
+        <label class="form-label" for="address">Hostel Name / Address</label>
+        <input type="text" id="address" name="address" class="form-control" placeholder="e.g. Hostel Block B, Room 302 or Local Campus Address" value="{{ student.address if student else '' }}">
+      </div>
+
+      <div class="form-group" style="margin-top: 1rem;">
+        <label class="form-label">Dietary Preference</label>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.8rem; margin-top: 0.4rem;">
+          
+          <label class="glass-card" style="padding: 0.8rem 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.6rem; margin: 0;">
+            <input type="radio" name="dietary_pref" value="Vegetarian" {% if not student or student.dietary_pref == 'Vegetarian' %}checked{% endif %}>
+            <span style="font-size: 0.9rem; font-weight: 600;"><i class="fa-solid fa-leaf" style="color: var(--success);"></i> Vegetarian</span>
+          </label>
+
+          <label class="glass-card" style="padding: 0.8rem 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.6rem; margin: 0;">
+            <input type="radio" name="dietary_pref" value="Non-Vegetarian" {% if student and student.dietary_pref == 'Non-Vegetarian' %}checked{% endif %}>
+            <span style="font-size: 0.9rem; font-weight: 600;"><i class="fa-solid fa-drumstick-bite" style="color: var(--danger);"></i> Non-Veg</span>
+          </label>
+
+          <label class="glass-card" style="padding: 0.8rem 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.6rem; margin: 0;">
+            <input type="radio" name="dietary_pref" value="Jain" {% if student and student.dietary_pref == 'Jain' %}checked{% endif %}>
+            <span style="font-size: 0.9rem; font-weight: 600;"><i class="fa-solid fa-wheat-awn" style="color: var(--warning);"></i> Jain</span>
+          </label>
+
+          <label class="glass-card" style="padding: 0.8rem 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.6rem; margin: 0;">
+            <input type="radio" name="dietary_pref" value="No Preference" {% if student and student.dietary_pref == 'No Preference' %}checked{% endif %}>
+            <span style="font-size: 0.9rem; font-weight: 600;"><i class="fa-solid fa-utensils" style="color: var(--text-muted);"></i> Any</span>
+          </label>
+
+        </div>
+      </div>
+
+      <div style="margin-top: 2rem;">
+        <button type="submit" class="btn-primary" style="width: 100%; padding: 0.9rem; font-size: 1.05rem;">
+          Save & Continue <i class="fa-solid fa-check-circle"></i>
+        </button>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+{% endblock %}

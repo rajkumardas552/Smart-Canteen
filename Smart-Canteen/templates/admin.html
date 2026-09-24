@@ -1,0 +1,167 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}Admin Dashboard | Smart Canteen{% endblock %}
+
+{% block content %}
+<!-- Top Header -->
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.8rem;">
+  <div>
+    <h1 style="font-size: 1.8rem; font-weight: 800;">Live Admin Dashboard</h1>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">Real-time canteen order management & system metrics</p>
+  </div>
+  <div style="display: flex; align-items: center; gap: 0.6rem; background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.3); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.85rem; font-weight: 700; color: var(--success);">
+    <i class="fa-solid fa-circle fa-beat" style="font-size: 8px;"></i> Live Updates Active
+  </div>
+</div>
+
+<!-- KPI Metric Cards Grid -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+  
+  <div class="glass-card" style="padding: 1.25rem;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted);">Total Orders</div>
+        <div id="stat-total-orders" style="font-size: 1.8rem; font-weight: 800; margin-top: 4px;">{{ stats.total_orders }}</div>
+      </div>
+      <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(255, 157, 0, 0.15); color: var(--primary-accent); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+        <i class="fa-solid fa-cart-shopping"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="glass-card" style="padding: 1.25rem;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted);">Pending Orders</div>
+        <div id="stat-pending-orders" style="font-size: 1.8rem; font-weight: 800; color: var(--warning); margin-top: 4px;">{{ stats.pending_orders }}</div>
+      </div>
+      <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(245, 158, 11, 0.15); color: var(--warning); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+        <i class="fa-solid fa-hourglass-half"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="glass-card" style="padding: 1.25rem;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted);">Completed Orders</div>
+        <div id="stat-completed-orders" style="font-size: 1.8rem; font-weight: 800; color: var(--success); margin-top: 4px;">{{ stats.completed_orders }}</div>
+      </div>
+      <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(34, 197, 94, 0.15); color: var(--success); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="glass-card" style="padding: 1.25rem;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted);">Total Students</div>
+        <div style="font-size: 1.8rem; font-weight: 800; margin-top: 4px;">{{ stats.total_students }}</div>
+      </div>
+      <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(59, 130, 246, 0.15); color: var(--info); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+        <i class="fa-solid fa-users"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="glass-card" style="padding: 1.25rem;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted);">Today's Revenue</div>
+        <div id="stat-today-revenue" style="font-size: 1.8rem; font-weight: 800; color: var(--primary-accent); margin-top: 4px;">₹{{ '%.2f'|format(stats.today_revenue) }}</div>
+      </div>
+      <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(255, 157, 0, 0.15); color: var(--primary-accent); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+        <i class="fa-solid fa-indian-rupee-sign"></i>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Live Orders Table Section -->
+<div class="glass-card" style="padding: 1.5rem;">
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem;">
+    <div>
+      <h3 style="font-size: 1.2rem; font-weight: 800;">LIVE ORDERS</h3>
+      <p style="color: var(--text-muted); font-size: 0.85rem;">Newest orders appear at top automatically</p>
+    </div>
+    <a href="{{ url_for('admin_orders') }}" class="btn-secondary btn-sm">View All Orders</a>
+  </div>
+
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Student Name</th>
+          <th>Roll Number</th>
+          <th>Items Ordered</th>
+          <th>Total Qty</th>
+          <th>Amount</th>
+          <th>Order Time</th>
+          <th>Status</th>
+          <th>Update Status</th>
+        </tr>
+      </thead>
+      <tbody id="admin-live-orders-body">
+        {% for order in orders %}
+        <tr>
+          <td style="font-weight: 800; color: var(--primary-accent);">
+            #{{ order.order_number }}
+          </td>
+          <td style="font-weight: 700;">{{ order.student_name }}</td>
+          <td>
+            <span class="status-pill status-pending" style="font-size: 0.75rem;">{{ order.roll_number }}</span>
+          </td>
+          <td style="max-width: 250px;">
+            {% for item in order['items'] %}
+            <div style="font-size: 0.85rem;">• {{ item.item_name }} × {{ item.quantity }}</div>
+            {% endfor %}
+          </td>
+          <td style="font-weight: 700;">
+            {{ order['items']|sum(attribute='quantity') }}
+          </td>
+          <td style="font-weight: 800; color: var(--primary-accent);">
+            ₹{{ '%.2f'|format(order.total_amount) }}
+          </td>
+          <td style="font-size: 0.82rem; color: var(--text-muted);">
+            {{ order.order_time }}
+          </td>
+          <td>
+            {% if order.status == 'Pending' %}
+              <span class="status-pill status-pending">Pending</span>
+            {% elif order.status == 'Preparing' %}
+              <span class="status-pill status-preparing">Preparing</span>
+            {% elif order.status == 'Ready' %}
+              <span class="status-pill status-ready">Ready</span>
+            {% elif order.status == 'Completed' %}
+              <span class="status-pill status-completed">Completed</span>
+            {% else %}
+              <span class="status-pill status-cancelled">Cancelled</span>
+            {% endif %}
+          </td>
+          <td>
+            <form action="{{ url_for('admin_update_order_status', order_id=order.id) }}" method="POST" style="display: flex; gap: 0.4rem;">
+              <select name="status" class="form-control" style="padding: 0.4rem 0.6rem; font-size: 0.82rem;" onchange="this.form.submit()">
+                <option value="Pending" {% if order.status == 'Pending' %}selected{% endif %}>Pending</option>
+                <option value="Preparing" {% if order.status == 'Preparing' %}selected{% endif %}>Preparing</option>
+                <option value="Ready" {% if order.status == 'Ready' %}selected{% endif %}>Ready</option>
+                <option value="Completed" {% if order.status == 'Completed' %}selected{% endif %}>Completed</option>
+                <option value="Cancelled" {% if order.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+              </select>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+            No orders placed yet.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

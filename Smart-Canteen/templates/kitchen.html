@@ -1,0 +1,91 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}Kitchen Display System (KDS) | Smart Canteen Chef Mode{% endblock %}
+
+{% block content %}
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+  <div>
+    <h1 style="font-size: 1.8rem; font-weight: 800;">👨‍🍳 Kitchen Display System (KDS)</h1>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">Touch-optimized live ticket screen for canteen chefs</p>
+  </div>
+  <div style="display: flex; gap: 0.6rem;">
+    <a href="{{ url_for('live_counter') }}" target="_blank" class="btn-secondary btn-sm"><i class="fa-solid fa-tv"></i> Open TV Board</a>
+  </div>
+</div>
+
+{% if orders %}
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem;">
+  {% for order in orders %}
+  <div class="solid-card" style="padding: 1.5rem; border-top: 5px solid {% if order.status == 'Pending' %}var(--warning){% else %}var(--info){% endif %}; display: flex; flex-direction: column; justify-content: space-between;">
+    
+    <div>
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.8rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--card-border);">
+        <div>
+          <div style="font-size: 1.5rem; font-weight: 800; font-family: monospace; color: var(--primary-accent);">
+            #{{ order.order_number }}
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
+            Slot: <strong style="color: var(--text-primary);">{{ order.pickup_slot or 'Instant Prep' }}</strong>
+          </div>
+        </div>
+
+        {% if order.status == 'Pending' %}
+        <span class="status-pill status-pending" style="font-size: 0.82rem;">NEW TICKET</span>
+        {% else %}
+        <span class="status-pill status-preparing" style="font-size: 0.82rem;"><i class="fa-solid fa-fire fa-spin"></i> COOKING</span>
+        {% endif %}
+      </div>
+
+      <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.8rem;">
+        Student: <strong style="color: var(--text-primary);">{{ order.student_name }}</strong> ({{ order.roll_number }})
+      </div>
+
+      <!-- Items List -->
+      <div style="display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.2rem;">
+        {% for item in order['items'] %}
+        <div style="background: var(--bg-secondary); padding: 0.75rem; border-radius: 8px; border: 1px solid var(--card-border);">
+          <div style="display: flex; justify-content: space-between; font-size: 1.05rem; font-weight: 800;">
+            <span>{{ item.item_name }}</span>
+            <span style="color: var(--primary-accent);">× {{ item.quantity }}</span>
+          </div>
+          {% if item.addons_json %}
+          <div style="font-size: 0.78rem; color: var(--primary-accent); margin-top: 2px;">Add-ons: {{ item.addons_json }}</div>
+          {% endif %}
+          {% if item.instructions %}
+          <div style="font-size: 0.78rem; color: var(--warning); font-style: italic; margin-top: 2px;">Note: "{{ item.instructions }}"</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Chef Actions -->
+    <div>
+      {% if order.status == 'Pending' %}
+      <form action="{{ url_for('admin_update_order_status', order_id=order.id) }}" method="POST">
+        <input type="hidden" name="status" value="Preparing">
+        <button type="submit" class="btn-primary" style="width: 100%; padding: 0.9rem; font-size: 1.05rem; background: var(--info); color: #fff;">
+          <i class="fa-solid fa-fire"></i> Start Preparing
+        </button>
+      </form>
+      {% elif order.status == 'Preparing' %}
+      <form action="{{ url_for('admin_update_order_status', order_id=order.id) }}" method="POST">
+        <input type="hidden" name="status" value="Ready">
+        <button type="submit" class="btn-primary" style="width: 100%; padding: 0.9rem; font-size: 1.05rem; background: var(--success); color: #000;">
+          <i class="fa-solid fa-bell"></i> Mark Ready for Counter!
+        </button>
+      </form>
+      {% endif %}
+    </div>
+
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="solid-card" style="text-align: center; padding: 4rem 1rem;">
+  <i class="fa-solid fa-kitchen-set" style="font-size: 3.5rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+  <h2>No Active Kitchen Tickets</h2>
+  <p style="color: var(--text-muted); margin-top: 0.4rem;">All kitchen orders have been prepared and sent to the counter!</p>
+</div>
+{% endif %}
+{% endblock %}

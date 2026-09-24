@@ -1,0 +1,77 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}Payment Transaction Logs | Smart Canteen Admin{% endblock %}
+
+{% block content %}
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.8rem;">
+  <div>
+    <h1 style="font-size: 1.8rem; font-weight: 800;">Payment Transaction Logs</h1>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">Audit campus canteen financial transactions & payment gateway references</p>
+  </div>
+
+  <span class="status-pill status-ready" style="font-size: 0.82rem;">
+    <i class="fa-solid fa-shield-halved"></i> Gateway-Ready Mode
+  </span>
+</div>
+
+<div class="solid-card" style="padding: 1.5rem;">
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Payment Ref ID</th>
+          <th>Order #</th>
+          <th>Student Name</th>
+          <th>Roll Number</th>
+          <th>Amount</th>
+          <th>Payment Method</th>
+          <th>Status</th>
+          <th>Date & Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pay in payments %}
+        <tr>
+          <td style="font-family: monospace; font-weight: 800; color: var(--primary-accent);">
+            {{ pay.payment_reference }}
+          </td>
+          <td style="font-weight: 700;">#{{ pay.order_number }}</td>
+          <td style="font-weight: 700;">{{ pay.student_name }}</td>
+          <td>
+            <span class="status-pill status-pending" style="font-size: 0.75rem;">{{ pay.roll_number }}</span>
+          </td>
+          <td style="font-weight: 800; color: var(--primary-accent);">
+            ₹{{ '%.2f'|format(pay.amount) }}
+          </td>
+          <td>
+            {% if pay.payment_method == 'UPI' %}
+              <span class="status-pill status-completed"><i class="fa-solid fa-mobile-screen-button"></i> UPI</span>
+            {% elif 'Card' in pay.payment_method %}
+              <span class="status-pill status-preparing"><i class="fa-solid fa-credit-card"></i> Card</span>
+            {% elif 'Wallet' in pay.payment_method %}
+              <span class="status-pill status-ready"><i class="fa-solid fa-wallet"></i> Wallet</span>
+            {% else %}
+              <span class="status-pill status-pending"><i class="fa-solid fa-money-bill-wave"></i> Cash</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if pay.payment_status == 'Paid' %}
+              <span class="status-pill status-completed">Paid</span>
+            {% else %}
+              <span class="status-pill status-pending">Pending</span>
+            {% endif %}
+          </td>
+          <td style="font-size: 0.8rem; color: var(--text-muted);">
+            {{ pay.created_at }}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No payment transactions recorded yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

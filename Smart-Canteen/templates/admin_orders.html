@@ -1,0 +1,113 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}Orders Management | Smart Canteen Admin{% endblock %}
+
+{% block content %}
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.8rem;">
+  <div>
+    <h1 style="font-size: 1.8rem; font-weight: 800;">Orders Management</h1>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">View and manage all student canteen orders</p>
+  </div>
+</div>
+
+<!-- Status Filters -->
+<div style="margin-bottom: 1.5rem; display: flex; gap: 0.6rem; overflow-x: auto; padding-bottom: 0.4rem;">
+  <a href="{{ url_for('admin_orders', status='All') }}" class="btn-secondary btn-sm {% if status_filter == 'All' %}active{% endif %}" style="{% if status_filter == 'All' %}background: var(--primary-accent); color: #000; font-weight: 800;{% endif %}">
+    All Orders
+  </a>
+  <a href="{{ url_for('admin_orders', status='Pending') }}" class="btn-secondary btn-sm {% if status_filter == 'Pending' %}active{% endif %}" style="{% if status_filter == 'Pending' %}background: var(--primary-accent); color: #000; font-weight: 800;{% endif %}">
+    Pending
+  </a>
+  <a href="{{ url_for('admin_orders', status='Preparing') }}" class="btn-secondary btn-sm {% if status_filter == 'Preparing' %}active{% endif %}" style="{% if status_filter == 'Preparing' %}background: var(--primary-accent); color: #000; font-weight: 800;{% endif %}">
+    Preparing
+  </a>
+  <a href="{{ url_for('admin_orders', status='Ready') }}" class="btn-secondary btn-sm {% if status_filter == 'Ready' %}active{% endif %}" style="{% if status_filter == 'Ready' %}background: var(--primary-accent); color: #000; font-weight: 800;{% endif %}">
+    Ready
+  </a>
+  <a href="{{ url_for('admin_orders', status='Completed') }}" class="btn-secondary btn-sm {% if status_filter == 'Completed' %}active{% endif %}" style="{% if status_filter == 'Completed' %}background: var(--primary-accent); color: #000; font-weight: 800;{% endif %}">
+    Completed
+  </a>
+  <a href="{{ url_for('admin_orders', status='Cancelled') }}" class="btn-secondary btn-sm {% if status_filter == 'Cancelled' %}active{% endif %}" style="{% if status_filter == 'Cancelled' %}background: var(--primary-accent); color: #000; font-weight: 800;{% endif %}">
+    Cancelled
+  </a>
+</div>
+
+<div class="glass-card" style="padding: 1.5rem;">
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Order #</th>
+          <th>Student</th>
+          <th>Roll #</th>
+          <th>Items & Notes</th>
+          <th>Total</th>
+          <th>Date & Time</th>
+          <th>Status</th>
+          <th>Update Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in orders %}
+        <tr>
+          <td style="font-weight: 800; color: var(--primary-accent);">
+            #{{ order.order_number }}
+          </td>
+          <td style="font-weight: 700;">
+            {{ order.student_name }}
+            <div style="font-size: 0.78rem; color: var(--text-muted);">{{ order.phone }}</div>
+          </td>
+          <td>
+            <span class="status-pill status-pending" style="font-size: 0.75rem;">{{ order.roll_number }}</span>
+          </td>
+          <td style="max-width: 260px;">
+            {% for item in order['items'] %}
+            <div style="font-size: 0.85rem; font-weight: 600;">• {{ item.item_name }} × {{ item.quantity }}</div>
+            {% if item.addons_json %}
+            <div style="font-size: 0.75rem; color: var(--primary-accent);">Addons: {{ item.addons_json }}</div>
+            {% endif %}
+            {% endfor %}
+          </td>
+          <td style="font-weight: 800; color: var(--primary-accent);">
+            ₹{{ '%.2f'|format(order.total_amount) }}
+          </td>
+          <td style="font-size: 0.8rem; color: var(--text-muted);">
+            {{ order.order_date }}<br>{{ order.order_time }}
+          </td>
+          <td>
+            {% if order.status == 'Pending' %}
+              <span class="status-pill status-pending">Pending</span>
+            {% elif order.status == 'Preparing' %}
+              <span class="status-pill status-preparing">Preparing</span>
+            {% elif order.status == 'Ready' %}
+              <span class="status-pill status-ready">Ready</span>
+            {% elif order.status == 'Completed' %}
+              <span class="status-pill status-completed">Completed</span>
+            {% else %}
+              <span class="status-pill status-cancelled">Cancelled</span>
+            {% endif %}
+          </td>
+          <td>
+            <form action="{{ url_for('admin_update_order_status', order_id=order.id) }}" method="POST">
+              <select name="status" class="form-control" style="padding: 0.4rem 0.6rem; font-size: 0.82rem;" onchange="this.form.submit()">
+                <option value="Pending" {% if order.status == 'Pending' %}selected{% endif %}>Pending</option>
+                <option value="Preparing" {% if order.status == 'Preparing' %}selected{% endif %}>Preparing</option>
+                <option value="Ready" {% if order.status == 'Ready' %}selected{% endif %}>Ready</option>
+                <option value="Completed" {% if order.status == 'Completed' %}selected{% endif %}>Completed</option>
+                <option value="Cancelled" {% if order.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+              </select>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+            No orders found for this filter.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

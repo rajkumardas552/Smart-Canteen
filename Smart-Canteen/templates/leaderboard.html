@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Campus Top Foodies Leaderboard | Smart Canteen{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+  
+  <div style="text-align: center; margin-bottom: 2rem;">
+    <div style="width: 70px; height: 70px; background: rgba(255, 157, 0, 0.15); border: 2px solid var(--primary-accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto; box-shadow: var(--shadow-glow);">
+      <i class="fa-solid fa-trophy" style="font-size: 2rem; color: var(--primary-accent);"></i>
+    </div>
+    <h1 style="font-size: 2rem; font-weight: 900;">Campus Foodies Leaderboard</h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">Top food lovers ordering hot & fresh meals on campus this month!</p>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 1rem;">
+    {% for f in foodies %}
+    <div class="solid-card tilt-card" style="padding: 1.25rem 1.6rem; display: flex; align-items: center; justify-content: space-between; {% if loop.index == 1 %}border: 2px solid #FFD700; background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, var(--card-bg) 100%);{% elif loop.index == 2 %}border: 2px solid #C0C0C0;{% elif loop.index == 3 %}border: 2px solid #CD7F32;{% endif %}">
+      
+      <div style="display: flex; align-items: center; gap: 1.2rem;">
+        <!-- Rank Pill -->
+        <div style="font-size: 1.4rem; font-weight: 900; width: 40px; text-align: center;">
+          {% if loop.index == 1 %}
+            <span style="color: #FFD700;">🥇</span>
+          {% elif loop.index == 2 %}
+            <span style="color: #C0C0C0;">🥈</span>
+          {% elif loop.index == 3 %}
+            <span style="color: #CD7F32;">🥉</span>
+          {% else %}
+            <span style="color: var(--text-muted);">#{{ loop.index }}</span>
+          {% endif %}
+        </div>
+
+        <!-- Avatar -->
+        {% if f.avatar_url %}
+        <img src="{{ f.avatar_url }}" alt="{{ f.name }}" style="width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary-accent);">
+        {% else %}
+        <div style="width: 55px; height: 55px; border-radius: 50%; background: var(--accent-gradient); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.3rem; color: #000;">
+          {{ f.name[0] if f.name else 'S' }}
+        </div>
+        {% endif %}
+
+        <div>
+          <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.2rem;">
+            {{ f.name }}
+            {% if loop.index == 1 %}<span style="font-size: 0.72rem; background: #FFD700; color: #000; font-weight: 900; padding: 2px 6px; border-radius: 6px; margin-left: 6px;">FOOD LEGEND</span>{% endif %}
+          </h3>
+          <div style="font-size: 0.8rem; color: var(--text-muted);">
+            {{ f.department or 'Engineering' }} • ID: {{ f.roll_number }}
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align: right;">
+        <div style="font-size: 1.25rem; font-weight: 900; color: var(--primary-accent);">
+          {{ f.total_orders or 0 }} Orders
+        </div>
+        <div style="font-size: 0.78rem; color: var(--text-muted);">
+          Total Spent: ₹{{ '%.0f'|format(f.total_spent or 0) }}
+        </div>
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

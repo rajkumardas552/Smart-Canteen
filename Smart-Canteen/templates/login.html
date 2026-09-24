@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Login | Smart Canteen{% endblock %}
+
+{% block content %}
+<div class="login-wrapper">
+  <div class="split-login-container">
+    
+    <!-- LEFT SIDE: Food Visual Area -->
+    <div class="login-visual">
+      <div class="login-visual-content">
+        <div class="brand-logo" style="margin-bottom: 2rem;">
+          <i class="fa-solid fa-utensils"></i>
+          <span>Smart <span class="accent">Canteen</span></span>
+        </div>
+        <h1 style="font-size: 2.2rem; font-weight: 800; line-height: 1.2; margin-bottom: 1rem;">
+          Welcome to <br><span class="accent" style="background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Smart Canteen</span>
+        </h1>
+        <p style="color: var(--text-muted); font-size: 1.05rem; margin-bottom: 2rem;">
+          Order your favourite food before the rush. Skip lines, track your order live, and enjoy hot meals on campus.
+        </p>
+
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+          <div style="background: rgba(255,255,255,0.08); backdrop-filter: blur(10px); padding: 0.8rem 1.2rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 0.6rem;">
+            <i class="fa-solid fa-bolt" style="color: var(--primary-accent); font-size: 1.2rem;"></i>
+            <div>
+              <div style="font-size: 0.85rem; font-weight: 700;">Fast Pickup</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">10-15 Min Prep</div>
+            </div>
+          </div>
+          <div style="background: rgba(255,255,255,0.08); backdrop-filter: blur(10px); padding: 0.8rem 1.2rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 0.6rem;">
+            <i class="fa-solid fa-shield-halved" style="color: var(--success); font-size: 1.2rem;"></i>
+            <div>
+              <div style="font-size: 0.85rem; font-weight: 700;">Zero Queue</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Instant Pre-Orders</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="font-size: 0.8rem; color: var(--text-muted); z-index: 2;">
+        © 2026 Smart Canteen System • Campus Edition
+      </div>
+    </div>
+
+    <!-- RIGHT SIDE: Student Login Glass Form -->
+    <div class="login-form-area">
+      <div style="margin-bottom: 2rem;">
+        <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem;">Student Login</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Enter your name and roll number to continue</p>
+      </div>
+
+      <form action="{{ url_for('login') }}" method="POST">
+        <div class="form-group">
+          <label class="form-label" for="name"><i class="fa-solid fa-user"></i> Student Name</label>
+          <input type="text" id="name" name="name" class="form-control" placeholder="e.g. Raj Kumar" required autofocus>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 2rem;">
+          <label class="form-label" for="roll_number"><i class="fa-solid fa-id-card"></i> Roll Number</label>
+          <input type="text" id="roll_number" name="roll_number" class="form-control" placeholder="e.g. CSE001" required style="text-transform: uppercase;">
+        </div>
+
+        <button type="submit" class="btn-primary" style="width: 100%; padding: 0.9rem; font-size: 1.05rem;">
+          Continue <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </form>
+
+      <div style="margin-top: 2.5rem; text-align: center; border-top: 1px solid var(--glass-border); padding-top: 1.5rem;">
+        <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 0.4rem;">Are you an administrator?</p>
+        <a href="{{ url_for('admin_login') }}" style="font-weight: 700; color: var(--primary-accent); display: inline-flex; align-items: center; gap: 0.4rem;">
+          <i class="fa-solid fa-user-shield"></i> Admin Login
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}Sales & Rush Analytics | Admin Smart Canteen{% endblock %}
+
+{% block admin_content %}
+<!-- Top Header -->
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem;">
+  <div>
+    <h1 style="font-size: 1.8rem; font-weight: 800;">Sales & Rush Analytics</h1>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">Real-time campus order distribution, peak hours, and sales insights.</p>
+  </div>
+  <a href="{{ url_for('admin_dashboard') }}" class="btn-secondary btn-sm">
+    <i class="fa-solid fa-arrow-left"></i> Back to Live Orders
+  </a>
+</div>
+
+<!-- Key Performance Metrics Cards -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+  <div class="solid-card" style="padding: 1.5rem;">
+    <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Total Campus Orders</div>
+    <div style="font-size: 2.2rem; font-weight: 900; color: var(--text-primary); margin-top: 0.4rem;">{{ stats.total_orders }}</div>
+  </div>
+
+  <div class="solid-card" style="padding: 1.5rem;">
+    <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Total Revenue</div>
+    <div style="font-size: 2.2rem; font-weight: 900; color: var(--success); margin-top: 0.4rem;">₹{{ '%.0f'|format(stats.today_revenue) }}</div>
+  </div>
+
+  <div class="solid-card" style="padding: 1.5rem;">
+    <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Peak Rush Hour</div>
+    <div style="font-size: 2.2rem; font-weight: 900; color: var(--primary-accent); margin-top: 0.4rem;">1:00 PM</div>
+  </div>
+
+  <div class="solid-card" style="padding: 1.5rem;">
+    <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Registered Students</div>
+    <div style="font-size: 2.2rem; font-weight: 900; color: var(--info); margin-top: 0.4rem;">{{ stats.total_students }}</div>
+  </div>
+</div>
+
+<!-- Charts Section -->
+<div style="display: grid; grid-template-columns: 2fr 1.2fr; gap: 1.5rem; margin-bottom: 2rem;">
+  
+  <!-- Peak Rush Timeline Bar Chart -->
+  <div class="solid-card" style="padding: 1.5rem;">
+    <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1rem;"><i class="fa-solid fa-chart-column" style="color: var(--primary-accent);"></i> Campus Canteen Peak Rush Hours Timeline</h3>
+    <div style="height: 280px; display: flex; align-items: flex-end; justify-content: space-between; gap: 0.8rem; padding-top: 1rem; border-bottom: 2px solid var(--card-border);">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 0.4rem; flex: 1;">
+        <div style="width: 100%; height: 60px; background: rgba(59, 130, 246, 0.4); border-radius: 6px 6px 0 0;"></div>
+        <span style="font-size: 0.72rem; color: var(--text-muted);">9 AM</span>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 0.4rem; flex: 1;">
+        <div style="width: 100%; height: 120px; background: rgba(59, 130, 246, 0.6); border-radius: 6px 6px 0 0;"></div>
+        <span style="font-size: 0.72rem; color: var(--text-muted);">11 AM</span>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 0.4rem; flex: 1;">
+        <div style="width: 100%; height: 230px; background: var(--primary-accent); border-radius: 6px 6px 0 0; box-shadow: 0 0 15px rgba(255,157,0,0.4);"></div>
+        <span style="font-size: 0.75rem; font-weight: 800; color: var(--primary-accent);">1 PM</span>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 0.4rem; flex: 1;">
+        <div style="width: 100%; height: 140px; background: rgba(59, 130, 246, 0.7); border-radius: 6px 6px 0 0;"></div>
+        <span style="font-size: 0.72rem; color: var(--text-muted);">3 PM</span>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 0.4rem; flex: 1;">
+        <div style="width: 100%; height: 180px; background: rgba(255, 107, 53, 0.8); border-radius: 6px 6px 0 0;"></div>
+        <span style="font-size: 0.72rem; color: var(--text-muted);">5 PM</span>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 0.4rem; flex: 1;">
+        <div style="width: 100%; height: 90px; background: rgba(59, 130, 246, 0.5); border-radius: 6px 6px 0 0;"></div>
+        <span style="font-size: 0.72rem; color: var(--text-muted);">8 PM</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Category Sales Pie -->
+  <div class="solid-card" style="padding: 1.5rem;">
+    <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1.25rem;"><i class="fa-solid fa-chart-pie" style="color: var(--secondary-accent);"></i> Top Category Sales</h3>
+    <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+      <div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.2rem;">
+          <span>🍔 Burgers & Fast Food</span>
+          <span>35%</span>
+        </div>
+        <div style="width: 100%; height: 8px; background: var(--card-border); border-radius: 4px; overflow: hidden;">
+          <div style="width: 35%; height: 100%; background: #FF9D00;"></div>
+        </div>
+      </div>
+
+      <div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.2rem;">
+          <span>🍕 Pizza Special</span>
+          <span>25%</span>
+        </div>
+        <div style="width: 100%; height: 8px; background: var(--card-border); border-radius: 4px; overflow: hidden;">
+          <div style="width: 25%; height: 100%; background: #EF4444;"></div>
+        </div>
+      </div>
+
+      <div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.2rem;">
+          <span>☕ Chai, Shakes & Drinks</span>
+          <span>22%</span>
+        </div>
+        <div style="width: 100%; height: 8px; background: var(--card-border); border-radius: 4px; overflow: hidden;">
+          <div style="width: 22%; height: 100%; background: #3B82F6;"></div>
+        </div>
+      </div>
+
+      <div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.2rem;">
+          <span>🍛 Thalis & South Indian</span>
+          <span>18%</span>
+        </div>
+        <div style="width: 100%; height: 8px; background: var(--card-border); border-radius: 4px; overflow: hidden;">
+          <div style="width: 18%; height: 100%; background: #22C55E;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

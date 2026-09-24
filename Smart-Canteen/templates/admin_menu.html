@@ -1,0 +1,241 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}Menu Management | Smart Canteen Admin{% endblock %}
+
+{% block content %}
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.8rem;">
+  <div>
+    <h1 style="font-size: 1.8rem; font-weight: 800;">Menu Management</h1>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">Add, edit, or toggle availability of canteen food items</p>
+  </div>
+
+  <button class="btn-primary" onclick="openAddModal()">
+    <i class="fa-solid fa-plus"></i> Add New Food
+  </button>
+</div>
+
+<!-- Category Filters -->
+<div style="margin-bottom: 1.5rem; display: flex; gap: 0.6rem; overflow-x: auto; padding-bottom: 0.4rem;">
+  {% for cat in categories %}
+  <a href="{{ url_for('admin_menu', category=cat) }}" class="btn-secondary btn-sm {% if selected_category == cat %}active{% endif %}" style="{% if selected_category == cat %}background: var(--primary-accent); color: #000; font-weight: 800;{% endif %}">
+    {{ cat }}
+  </a>
+  {% endfor %}
+</div>
+
+<!-- Menu Items Table -->
+<div class="glass-card" style="padding: 1.5rem;">
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Image</th>
+          <th>Item Name</th>
+          <th>Category</th>
+          <th>Price</th>
+          <th>Rating</th>
+          <th>Veg / Non-Veg</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td>
+            <img src="{{ item.image_url }}" alt="{{ item.name }}" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;">
+          </td>
+          <td style="font-weight: 700;">
+            {{ item.name }}
+            <div style="font-size: 0.78rem; color: var(--text-muted); max-width: 200px;">{{ item.description }}</div>
+          </td>
+          <td><span class="status-pill status-preparing" style="font-size: 0.78rem;">{{ item.category }}</span></td>
+          <td style="font-weight: 800; color: var(--primary-accent);">₹{{ '%.0f'|format(item.price) }}</td>
+          <td><i class="fa-solid fa-star" style="color: var(--warning);"></i> {{ item.rating }}</td>
+          <td>
+            {% if item.is_veg %}
+            <span class="status-pill status-completed" style="font-size: 0.75rem;">Veg</span>
+            {% else %}
+            <span class="status-pill status-cancelled" style="font-size: 0.75rem;">Non-Veg</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if item.is_available %}
+            <span class="status-pill status-completed">In Stock</span>
+            {% else %}
+            <span class="status-pill status-cancelled">Out of Stock</span>
+            {% endif %}
+          </td>
+          <td>
+            <div style="display: flex; gap: 0.4rem;">
+              <form action="{{ url_for('admin_toggle_menu_item', item_id=item.id) }}" method="POST">
+                <button type="submit" class="btn-secondary btn-sm" title="Toggle Stock Availability">
+                  <i class="fa-solid fa-power-off" style="color: {% if item.is_available %}var(--success){% else %}var(--danger){% endif %};"></i>
+                </button>
+              </form>
+              <button class="btn-secondary btn-sm" onclick='openEditModal({{ item | tojson }})' title="Edit Details">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              <form action="{{ url_for('admin_delete_menu_item', item_id=item.id) }}" method="POST" onsubmit="return confirm('Delete this menu item?')">
+                <button type="submit" class="btn-danger btn-sm" title="Delete Item">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No menu items found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add Menu Item Modal -->
+<div id="add-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+      <h3 style="font-size: 1.3rem; font-weight: 800;">Add New Food Item</h3>
+      <button onclick="closeModal('add-modal')" style="background:none; border:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <form action="{{ url_for('admin_add_menu_item') }}" method="POST">
+      <div class="form-group">
+        <label class="form-label">Item Name</label>
+        <input type="text" name="name" class="form-control" placeholder="e.g. Paneer Tikka Burger" required>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select name="category" class="form-control" required>
+            <option value="Burgers">Burgers</option>
+            <option value="Pizza">Pizza</option>
+            <option value="Rolls">Rolls</option>
+            <option value="Noodles">Noodles</option>
+            <option value="Meals">Meals</option>
+            <option value="Snacks">Snacks</option>
+            <option value="Drinks">Drinks</option>
+            <option value="Desserts">Desserts</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Price (₹)</label>
+          <input type="number" step="1" name="price" class="form-control" placeholder="70" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea name="description" class="form-control" rows="2" placeholder="Brief delicious description..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Image URL</label>
+        <input type="url" name="image_url" class="form-control" placeholder="https://images.unsplash.com/...">
+      </div>
+
+      <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem;">
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+          <input type="checkbox" name="is_veg" checked style="accent-color: var(--success);">
+          <span style="font-weight: 700; font-size: 0.9rem;">Vegetarian</span>
+        </label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+          <input type="checkbox" name="is_available" checked style="accent-color: var(--primary-accent);">
+          <span style="font-weight: 700; font-size: 0.9rem;">In Stock</span>
+        </label>
+      </div>
+
+      <button type="submit" class="btn-primary" style="width: 100%;">Add Item to Menu</button>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Menu Item Modal -->
+<div id="edit-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+      <h3 style="font-size: 1.3rem; font-weight: 800;">Edit Food Item</h3>
+      <button onclick="closeModal('edit-modal')" style="background:none; border:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <form id="edit-form" method="POST">
+      <div class="form-group">
+        <label class="form-label">Item Name</label>
+        <input type="text" id="edit-name" name="name" class="form-control" required>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select id="edit-category" name="category" class="form-control" required>
+            <option value="Burgers">Burgers</option>
+            <option value="Pizza">Pizza</option>
+            <option value="Rolls">Rolls</option>
+            <option value="Noodles">Noodles</option>
+            <option value="Meals">Meals</option>
+            <option value="Snacks">Snacks</option>
+            <option value="Drinks">Drinks</option>
+            <option value="Desserts">Desserts</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Price (₹)</label>
+          <input type="number" step="1" id="edit-price" name="price" class="form-control" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea id="edit-description" name="description" class="form-control" rows="2"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Image URL</label>
+        <input type="url" id="edit-image-url" name="image_url" class="form-control">
+      </div>
+
+      <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem;">
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+          <input type="checkbox" id="edit-is-veg" name="is_veg" style="accent-color: var(--success);">
+          <span style="font-weight: 700; font-size: 0.9rem;">Vegetarian</span>
+        </label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+          <input type="checkbox" id="edit-is-available" name="is_available" style="accent-color: var(--primary-accent);">
+          <span style="font-weight: 700; font-size: 0.9rem;">In Stock</span>
+        </label>
+      </div>
+
+      <button type="submit" class="btn-primary" style="width: 100%;">Save Changes</button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function openAddModal() {
+    document.getElementById('add-modal').style.display = 'flex';
+  }
+  function closeModal(id) {
+    document.getElementById(id).style.display = 'none';
+  }
+  function openEditModal(item) {
+    document.getElementById('edit-form').action = '/admin/edit-menu-item/' + item.id;
+    document.getElementById('edit-name').value = item.name;
+    document.getElementById('edit-category').value = item.category;
+    document.getElementById('edit-price').value = item.price;
+    document.getElementById('edit-description').value = item.description || '';
+    document.getElementById('edit-image-url').value = item.image_url || '';
+    document.getElementById('edit-is-veg').checked = item.is_veg === 1;
+    document.getElementById('edit-is-available').checked = item.is_available === 1;
+    document.getElementById('edit-modal').style.display = 'flex';
+  }
+</script>
+{% endblock %}

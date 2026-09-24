@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Canteen Touchscreen Kiosk | Smart Canteen</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    body { background-color: #05080C; font-family: 'Plus Jakarta Sans', sans-serif; user-select: none; }
+    .kiosk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem; }
+    .kiosk-card { background: #121B24; border: 2px solid #1F2C39; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; }
+    .kiosk-btn { font-size: 1.2rem; font-weight: 800; padding: 1rem; border-radius: 12px; }
+  </style>
+</head>
+<body>
+
+  <!-- Kiosk Header -->
+  <div style="background: #101820; border-bottom: 2px solid #1F2C39; padding: 1.25rem 2rem; display: flex; justify-content: space-between; align-items: center;">
+    <div class="brand-logo" style="font-size: 1.8rem;">
+      <i class="fa-solid fa-utensils"></i>
+      <span>Smart <span class="accent">Canteen Kiosk</span></span>
+    </div>
+
+    <div style="display: flex; gap: 1rem; align-items: center;">
+      <span style="background: rgba(34, 197, 94, 0.15); color: #22C55E; border: 1px solid #22C55E; padding: 0.5rem 1.2rem; border-radius: 30px; font-weight: 800; font-size: 1rem;">
+        <i class="fa-solid fa-hand-pointer"></i> Touch Screen Mode
+      </span>
+      <a href="{{ url_for('home') }}" class="btn-secondary" style="padding: 0.6rem 1.2rem; font-weight: 700;">Exit Kiosk Mode</a>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 380px; height: calc(100vh - 85px);">
+    
+    <!-- Left Area: Catalog -->
+    <div style="padding: 1.5rem 2rem; overflow-y: auto;">
+      
+      <!-- Category Tabs -->
+      <div style="display: flex; gap: 0.8rem; overflow-x: auto; margin-bottom: 1.5rem; padding-bottom: 0.5rem;">
+        {% for cat in categories %}
+        <button class="btn-secondary kiosk-btn" onclick="filterKiosk('{{ cat }}')" style="white-space: nowrap;">
+          {{ cat }}
+        </button>
+        {% endfor %}
+      </div>
+
+      <!-- Food Items Grid -->
+      <div class="kiosk-grid">
+        {% for item in items %}
+        <div class="kiosk-card kiosk-item" data-category="{{ item.category }}">
+          <img src="{{ item.image_url }}" alt="{{ item.name }}" style="width: 100%; height: 160px; object-fit: cover;">
+          
+          <div style="padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between; flex: 1;">
+            <div>
+              <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 0.3rem;">{{ item.name }}</h3>
+              <p style="font-size: 0.82rem; color: #94A3B8; margin-bottom: 1rem;">{{ item.description }}</p>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #1F2C39; padding-top: 0.8rem;">
+              <span style="font-size: 1.4rem; font-weight: 800; color: #FF9D00;">₹{{ '%.0f'|format(item.price) }}</span>
+              <button class="btn-primary kiosk-btn" onclick="addKioskCart({{ item.id }}, '{{ item.name }}', {{ item.price }})" style="padding: 0.6rem 1.2rem;">
+                + ADD
+              </button>
+            </div>
+          </div>
+
+        </div>
+        {% endfor %}
+      </div>
+
+    </div>
+
+    <!-- Right Sidebar: Touch Cart -->
+    <div style="background: #101820; border-left: 2px solid #1F2C39; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+      <div>
+        <h2 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 1px solid #1F2C39;">
+          <i class="fa-solid fa-cart-shopping"></i> Kiosk Cart (<span id="kiosk-count">0</span>)
+        </h2>
+
+        <div id="kiosk-cart-body" style="display: flex; flex-direction: column; gap: 0.8rem; max-height: calc(100vh - 350px); overflow-y: auto;">
+          <div style="text-align: center; color: #94A3B8; margin-top: 3rem;">
+            <i class="fa-solid fa-hand-pointer" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+            <p>Tap <strong>+ ADD</strong> on food items to build your order!</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Kiosk Bill & Checkout -->
+      <div style="border-top: 2px solid #1F2C39; padding-top: 1rem;">
+        <div style="display: flex; justify-content: space-between; font-size: 1.6rem; font-weight: 800; margin-bottom: 1.2rem;">
+          <span>Total:</span>
+          <span style="color: #FF9D00;">₹<span id="kiosk-total">0</span></span>
+        </div>
+
+        <button class="btn-primary kiosk-btn" onclick="openKioskPayment()" style="width: 100%; padding: 1.25rem; font-size: 1.3rem; background: #22C55E; color: #000;">
+          <i class="fa-solid fa-qrcode"></i> TAP TO PAY & ORDER
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Kiosk Payment Modal -->
+  <div id="kiosk-modal" class="modal-overlay">
+    <div class="modal-content" style="text-align: center; max-width: 450px;">
+      <i class="fa-solid fa-qrcode" style="font-size: 5rem; color: #FF9D00; margin-bottom: 1rem;"></i>
+      <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem;">Scan & Pay</h2>
+      <p style="color: #94A3B8; font-size: 0.95rem; margin-bottom: 1.5rem;">Scan QR code with GPay / PhonePe / Paytm to complete payment</p>
+      <div style="font-size: 2rem; font-weight: 800; color: #FF9D00; margin-bottom: 1.5rem;">₹<span id="kiosk-modal-total">0</span></div>
+      
+      <form action="{{ url_for('place_order') }}" method="POST">
+        <input type="hidden" name="payment_method" value="UPI">
+        <input type="hidden" name="order_type" value="Canteen Pickup">
+        <input type="hidden" name="phone" value="+91 9876543210">
+        <button type="submit" class="btn-primary kiosk-btn" style="width: 100%; padding: 1rem;">
+          Simulate Payment Done <i class="fa-solid fa-check"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let kioskCart = {};
+
+    function addKioskCart(id, name, price) {
+      if (kioskCart[id]) {
+        kioskCart[id].qty++;
+      } else {
+        kioskCart[id] = { id, name, price, qty: 1 };
+      }
+      renderKioskCart();
+    }
+
+    function changeKioskQty(id, delta) {
+      if (kioskCart[id]) {
+        kioskCart[id].qty += delta;
+        if (kioskCart[id].qty <= 0) delete kioskCart[id];
+        renderKioskCart();
+      }
+    }
+
+    function renderKioskCart() {
+      const body = document.getElementById('kiosk-cart-body');
+      const countEl = document.getElementById('kiosk-count');
+      const totalEl = document.getElementById('kiosk-total');
+
+      const items = Object.values(kioskCart);
+      let total = 0;
+      let count = 0;
+
+      if (items.length === 0) {
+        body.innerHTML = `<div style="text-align: center; color: #94A3B8; margin-top: 3rem;"><i class="fa-solid fa-hand-pointer" style="font-size: 3rem; margin-bottom: 1rem;"></i><p>Tap <strong>+ ADD</strong> on food items to build your order!</p></div>`;
+      } else {
+        body.innerHTML = items.map(item => {
+          total += item.price * item.qty;
+          count += item.qty;
+          return `
+            <div style="background: #17212B; border: 1px solid #1F2C39; padding: 0.9rem; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-weight: 700; font-size: 1rem;">${item.name}</div>
+                <div style="color: #FF9D00; font-weight: 800; font-size: 0.95rem;">₹${item.price * item.qty}</div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <button onclick="changeKioskQty(${item.id}, -1)" style="width: 35px; height: 35px; border-radius: 8px; border: none; background: #1F2C39; color: #fff; font-weight: 800; font-size: 1.2rem;">-</button>
+                <span style="font-weight: 800; font-size: 1.1rem; padding: 0 4px;">${item.qty}</span>
+                <button onclick="changeKioskQty(${item.id}, 1)" style="width: 35px; height: 35px; border-radius: 8px; border: none; background: #1F2C39; color: #fff; font-weight: 800; font-size: 1.2rem;">+</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      countEl.textContent = count;
+      totalEl.textContent = total;
+    }
+
+    function filterKiosk(cat) {
+      document.querySelectorAll('.kiosk-item').forEach(el => {
+        if (cat === 'All' || el.getAttribute('data-category') === cat) {
+          el.style.display = 'flex';
+        } else {
+          el.style.display = 'none';
+        }
+      });
+    }
+
+    function openKioskPayment() {
+      const total = document.getElementById('kiosk-total').textContent;
+      if (parseInt(total) === 0) return alert('Please add items to kiosk cart first!');
+      document.getElementById('kiosk-modal-total').textContent = total;
+      document.getElementById('kiosk-modal').style.display = 'flex';
+    }
+  </script>
+</body>
+</html>

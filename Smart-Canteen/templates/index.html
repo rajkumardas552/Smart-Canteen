@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+
+{% block title %}Home | Smart Canteen{% endblock %}
+
+{% block content %}
+<!-- Top Header Greeting -->
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+  <div>
+    <h1 style="font-size: 1.75rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem;">
+      Hey, {{ student.name.split(' ')[0] if student and student.name else session.get('student_name', 'Student') }} 👋
+    </h1>
+    <p style="color: var(--primary-accent); font-size: 0.9rem; font-weight: 700;">
+      {{ time_greeting }} • <span style="color: var(--text-muted); font-weight: 500;">{{ time_sub }}</span>
+    </p>
+  </div>
+  <div style="display: flex; gap: 0.75rem; align-items: center;">
+    <button type="button" onclick="toggleLightDarkMode()" class="icon-btn" title="Toggle Light/Dark Theme">
+      <i class="fa-solid fa-sun-moon"></i>
+    </button>
+    <a href="{{ url_for('orders') }}" class="icon-btn" title="Live Orders">
+      <i class="fa-solid fa-bell"></i>
+    </a>
+  </div>
+</div>
+
+<!-- Search Bar with Voice Assistant -->
+<div style="margin-bottom: 1.75rem;">
+  <form action="{{ url_for('menu') }}" method="GET" style="display: flex; gap: 0.75rem;">
+    <div style="position: relative; flex: 1;">
+      <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+      <input type="text" name="search" class="form-control" placeholder="Search food, or click mic to speak..." style="padding-left: 48px; padding-right: 48px; border-radius: 30px; background: var(--card-bg);">
+      <button type="button" onclick="startVoiceSearch()" title="Speak to Order" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--primary-accent); cursor: pointer; font-size: 1.1rem; padding: 4px 8px;">
+        <i class="fa-solid fa-microphone"></i>
+      </button>
+    </div>
+    <button type="submit" class="btn-primary" style="border-radius: 30px; padding: 0 1.4rem;">
+      <i class="fa-solid fa-sliders"></i> Search
+    </button>
+  </form>
+</div>
+
+<!-- 1-Tap Repeat Last Order Widget (If Student Has History) -->
+{% if last_order %}
+<div style="margin-bottom: 1.75rem;">
+  <div class="solid-card" style="padding: 1rem 1.25rem; background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem;">
+    <div style="display: flex; align-items: center; gap: 0.8rem;">
+      <i class="fa-solid fa-rotate-left" style="font-size: 1.5rem; color: var(--info);"></i>
+      <div>
+        <div style="font-size: 0.78rem; font-weight: 800; color: var(--info); text-transform: uppercase;">Repeat Last Order</div>
+        <div style="font-size: 0.95rem; font-weight: 700;">
+          Order #{{ last_order.order_number }} • ₹{{ '%.0f'|format(last_order.total_amount) }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- ANIMATED CAMPUS SPONSORED AD BANNER -->
+<div class="campus-ad-slider-container" style="margin-bottom: 2rem;">
+  <!-- Ad Slide 1 -->
+  <div class="campus-ad-slide active-ad-slide" id="ad-slide-0" style="background: linear-gradient(135deg, #FF0055 0%, #7A00FF 100%);">
+    <div style="z-index: 2; max-width: 65%;">
+      <span class="ad-tag-badge">🔥 CANTEEN AD • SPECIAL DEAL</span>
+      <h3 class="ad-title">Late Night Hostel Cravings? 🌙</h3>
+      <p class="ad-desc">Order till 11:00 PM & get <strong>FREE Hostel Delivery</strong> on orders above ₹149!</p>
+      <a href="{{ url_for('menu') }}" class="btn-ad-action">Claim Deal Now <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+    <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&auto=format&fit=crop&q=80" alt="Late Night Pizza Ad" class="ad-img">
+  </div>
+
+  <!-- Ad Slide 2 -->
+  <div class="campus-ad-slide" id="ad-slide-1" style="background: linear-gradient(135deg, #00C9FF 0%, #92FE9D 100%); color: #000;">
+    <div style="z-index: 2; max-width: 65%;">
+      <span class="ad-tag-badge" style="background: rgba(0,0,0,0.15); color: #000;">☕ MORNING BOOST AD</span>
+      <h3 class="ad-title" style="color: #000;">Cutting Chai + Samosa Combo @ ₹35!</h3>
+      <p class="ad-desc" style="color: rgba(0,0,0,0.85);">Beat the 9 AM lecture rush with fast counter pickup.</p>
+      <a href="{{ url_for('menu', category='Snacks') }}" class="btn-ad-action" style="background: #000; color: #FFF !important;">Order Combo <i class="fa-solid fa-bolt"></i></a>
+    </div>
+    <img src="https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=400&auto=format&fit=crop&q=80" alt="Chai Samosa Combo Ad" class="ad-img">
+  </div>
+
+  <!-- Ad Slide 3 -->
+  <div class="campus-ad-slide" id="ad-slide-2" style="background: linear-gradient(135deg, #FF9900 0%, #FF5500 100%);">
+    <div style="z-index: 2; max-width: 65%;">
+      <span class="ad-tag-badge">🎉 GROUP FEAST AD</span>
+      <h3 class="ad-title">Flat 25% OFF on Group Orders!</h3>
+      <p class="ad-desc">Use coupon code <strong>CANTEEN25</strong> on orders above ₹399 with your squad.</p>
+      <a href="{{ url_for('menu') }}" class="btn-ad-action">Apply Code <i class="fa-solid fa-tag"></i></a>
+    </div>
+    <img src="https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&auto=format&fit=crop&q=80" alt="Group Feast Ad" class="ad-img">
+  </div>
+
+  <!-- Ad Slider Controls -->
+  <div class="ad-dots-container">
+    <span class="ad-dot active-dot" onclick="switchAdSlide(0)"></span>
+    <span class="ad-dot" onclick="switchAdSlide(1)"></span>
+    <span class="ad-dot" onclick="switchAdSlide(2)"></span>
+  </div>
+</div>
+
+<!-- Bento Hero Section (Inspired by GoodFood Design) -->
+<div class="bento-hero-wrapper">
+  <!-- Left Main Hero Banner -->
+  <div class="bento-main-card">
+    <div style="max-width: 58%; z-index: 2;">
+      <span class="bento-main-badge">Fast Food • Canteen Special</span>
+      <h2 class="bento-main-title">Fresh, Bold & Tasty</h2>
+      <p class="bento-main-sub">Pre-order hot meals on campus & skip canteen lines completely.</p>
+      <a href="{{ url_for('menu') }}" class="btn-bento-action">
+        Shop Now <i class="fa-solid fa-arrow-right"></i>
+      </a>
+    </div>
+
+    <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&auto=format&fit=crop&q=80" alt="Fresh Bold Tasty Burger" class="bento-main-img">
+  </div>
+
+  <!-- Right Side Bento Column -->
+  <div class="bento-side-col">
+    <!-- Top Side Card -->
+    <div class="bento-side-card-top">
+      <div>
+        <span style="font-size: 0.7rem; font-weight: 800; color: var(--primary-accent); text-transform: uppercase;">DOUBLE MEAT</span>
+        <h4 style="font-size: 1.1rem; font-weight: 800; color: #FFFFFF; margin: 0.2rem 0;">Deluxe Burger</h4>
+        <span style="background: var(--primary-accent); color: #000; font-size: 0.85rem; font-weight: 900; padding: 0.2rem 0.6rem; border-radius: 10px;">₹60.00</span>
+      </div>
+      <img src="https://images.unsplash.com/photo-1550547660-d9450f859349?w=300&auto=format&fit=crop&q=80" alt="Burger" style="width: 85px; height: 85px; border-radius: 14px; object-fit: cover;">
+    </div>
+
+    <!-- Bottom Side Card -->
+    <div class="bento-side-card-bottom">
+      <h4 style="font-size: 1.25rem; font-weight: 900; color: #FFFFFF; line-height: 1.2;">
+        Fresh, Delicious,<br><span style="color: #FFB703;">Delivered!</span>
+      </h4>
+      <p style="font-size: 0.78rem; color: rgba(255,255,255,0.7); margin-top: 0.3rem;">Hostel Delivery available till 9 PM</p>
+    </div>
+  </div>
+</div>
+
+<!-- Popular Canteen Counters / Brands Bar -->
+<div class="brands-strip-container">
+  <div class="brands-strip-title">Popular Campus Canteen Counters</div>
+  <div class="brands-flex">
+    <a href="{{ url_for('menu', category='Pizza') }}" class="brand-pill">
+      <i class="fa-solid fa-pizza-slice" style="color: #E63946;"></i> Domino's Corner
+    </a>
+    <a href="{{ url_for('menu', category='Drinks') }}" class="brand-pill">
+      <i class="fa-solid fa-mug-hot" style="color: #D97706;"></i> Nescafe Coffee Desk
+    </a>
+    <a href="{{ url_for('menu', category='Desserts') }}" class="brand-pill">
+      <i class="fa-solid fa-ice-cream" style="color: #EC4899;"></i> Amul Ice Cream Parlor
+    </a>
+    <a href="{{ url_for('menu', category='Rolls') }}" class="brand-pill">
+      <i class="fa-solid fa-bread-slice" style="color: #10B981;"></i> Subway Fresh
+    </a>
+    <a href="{{ url_for('menu', category='Burgers') }}" class="brand-pill">
+      <i class="fa-solid fa-burger" style="color: #F59E0B;"></i> KFC Style Crunch
+    </a>
+    <a href="{{ url_for('menu', category='Meals') }}" class="brand-pill">
+      <i class="fa-solid fa-bowl-rice" style="color: #3B82F6;"></i> South Indian Express
+    </a>
+  </div>
+</div>
+
+<!-- 4 Vibrant Bento Category Banners Grid (Matching Screenshot) -->
+<div class="bento-cat-grid">
+  <!-- Card 1: Purple -->
+  <a href="{{ url_for('menu', category='Burgers') }}" class="bento-cat-card cat-purple">
+    <div>
+      <h3 class="bento-cat-title">Grilled Double Cheese Burger</h3>
+      <div class="bento-cat-btn">Order Now <i class="fa-solid fa-arrow-right"></i></div>
+    </div>
+    <img src="https://images.unsplash.com/photo-1615297928064-24977384d0da?w=300&auto=format&fit=crop&q=80" alt="Burger" class="bento-cat-img">
+  </a>
+
+  <!-- Card 2: Amber -->
+  <a href="{{ url_for('menu', category='Pizza') }}" class="bento-cat-card cat-amber">
+    <div>
+      <h3 class="bento-cat-title">Tasty Yummy Cheesy Pizza</h3>
+      <div class="bento-cat-btn">Order Now <i class="fa-solid fa-arrow-right"></i></div>
+    </div>
+    <img src="https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=300&auto=format&fit=crop&q=80" alt="Pizza" class="bento-cat-img">
+  </a>
+
+  <!-- Card 3: Pink -->
+  <a href="{{ url_for('menu', category='Desserts') }}" class="bento-cat-card cat-pink">
+    <div>
+      <h3 class="bento-cat-title">New Menu Galaxy Shakes Time!</h3>
+      <div class="bento-cat-btn">Order Now <i class="fa-solid fa-arrow-right"></i></div>
+    </div>
+    <img src="https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=300&auto=format&fit=crop&q=80" alt="Shakes" class="bento-cat-img">
+  </a>
+
+  <!-- Card 4: Green -->
+  <a href="{{ url_for('menu', category='Meals') }}" class="bento-cat-card cat-green">
+    <div>
+      <h3 class="bento-cat-title">Fresh Delicious Veg Thali & Rolls</h3>
+      <div class="bento-cat-btn">Order Now <i class="fa-solid fa-arrow-right"></i></div>
+    </div>
+    <img src="https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=300&auto=format&fit=crop&q=80" alt="Thali" class="bento-cat-img">
+  </a>
+</div>
+
+<!-- Discounted Goods Section (Floating Circular Thumbnails Grid) -->
+<div>
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+    <h3 style="font-size: 1.25rem; font-weight: 900; display: flex; align-items: center; gap: 0.5rem;">
+      <i class="fa-solid fa-store" style="color: var(--primary-accent);"></i> Discounted Goods & Popular Items
+    </h3>
+    <a href="{{ url_for('menu') }}" style="font-size: 0.85rem; font-weight: 700;">View Full Menu →</a>
+  </div>
+
+  <div class="discounted-grid">
+    {% for item in popular_items %}
+    <div class="discount-card">
+      <!-- Floating Top Circular Image -->
+      <div class="discount-thumb-wrapper">
+        <img src="{{ item.image_url }}" alt="{{ item.name }}" class="discount-thumb-img">
+      </div>
+
+      <!-- Top Badges -->
+      <div class="discount-badge-top">
+        {% if loop.index % 2 == 0 %}
+        <span class="badge-hot-mini">HOT</span>
+        {% endif %}
+        <span class="rating-pill-mini"><i class="fa-solid fa-star" style="font-size: 10px;"></i> {{ item.rating }}</span>
+      </div>
+
+      <!-- Title & Desc -->
+      <a href="{{ url_for('food_details', item_id=item.id) }}">
+        <h4 class="discount-card-title">{{ item.name }}</h4>
+      </a>
+      <p class="discount-card-desc">{{ item.description }}</p>
+
+      <!-- Footer Price & Add Button -->
+      <div class="discount-card-footer">
+        <div class="discount-price-box">
+          <span class="price-original">₹{{ '%.0f'|format(item.price * 1.2) }}</span>
+          <span class="price-current">₹{{ '%.0f'|format(item.price) }}</span>
+        </div>
+        <button class="btn-add-pill btn-add-cart" data-id="{{ item.id }}">
+          Add +
+        </button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Little Bite About Us Banner (Bottom Banner) -->
+<div style="margin-top: 2rem; margin-bottom: 1.5rem;">
+  <div class="solid-card" style="padding: 1.8rem; background: linear-gradient(135deg, rgba(255, 157, 0, 0.12) 0%, rgba(59, 130, 246, 0.08) 100%); border-color: var(--card-border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.2rem;">
+    <div>
+      <span style="font-size: 0.8rem; font-weight: 800; color: var(--primary-accent); text-transform: uppercase;">💎 Campus Special Experience</span>
+      <h3 style="font-size: 1.4rem; font-weight: 800; margin: 0.3rem 0;">Savor the Flavor, Anytime, Anywhere</h3>
+      <p style="color: var(--text-muted); font-size: 0.88rem;">Fast campus pickup, live order tracking, and instant food ready alerts for college students.</p>
+    </div>
+    <a href="{{ url_for('menu') }}" class="btn-primary" style="padding: 0.75rem 1.5rem; border-radius: 30px;">
+      Explore Canteen Menu <i class="fa-solid fa-arrow-right"></i>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  let currentAdIndex = 0;
+  const totalAds = 3;
+
+  function switchAdSlide(index) {
+    currentAdIndex = index;
+    document.querySelectorAll('.campus-ad-slide').forEach((slide, i) => {
+      if (i === index) {
+        slide.classList.add('active-ad-slide');
+      } else {
+        slide.classList.remove('active-ad-slide');
+      }
+    });
+
+    document.querySelectorAll('.ad-dot').forEach((dot, i) => {
+      if (i === index) {
+        dot.classList.add('active-dot');
+      } else {
+        dot.classList.remove('active-dot');
+      }
+    });
+  }
+
+  // Auto rotate campus ad banner every 4.5 seconds
+  setInterval(() => {
+    currentAdIndex = (currentAdIndex + 1) % totalAds;
+    switchAdSlide(currentAdIndex);
+  }, 4500);
+</script>
+{% endblock %}

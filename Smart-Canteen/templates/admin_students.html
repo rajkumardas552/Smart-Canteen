@@ -1,0 +1,72 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}Registered Students | Smart Canteen Admin{% endblock %}
+
+{% block content %}
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.8rem;">
+  <div>
+    <h1 style="font-size: 1.8rem; font-weight: 800;">Students Directory</h1>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">View registered campus students and ordering statistics</p>
+  </div>
+</div>
+
+<!-- Search Bar -->
+<div class="glass-card" style="padding: 1rem; margin-bottom: 1.5rem;">
+  <form action="{{ url_for('admin_students') }}" method="GET" style="display: flex; gap: 0.8rem;">
+    <div style="position: relative; flex: 1;">
+      <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+      <input type="text" name="search" class="form-control" placeholder="Search by name, roll number, or department..." value="{{ search_query }}" style="padding-left: 40px;">
+    </div>
+    <button type="submit" class="btn-primary">Search</button>
+  </form>
+</div>
+
+<div class="glass-card" style="padding: 1.5rem;">
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Roll Number</th>
+          <th>Department</th>
+          <th>Semester</th>
+          <th>Phone</th>
+          <th>Hostel / Address</th>
+          <th>Total Orders</th>
+          <th>Last Order</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for student in students %}
+        <tr>
+          <td style="font-weight: 700;">
+            {{ student.name }}
+          </td>
+          <td>
+            <span class="status-pill status-ready" style="font-size: 0.78rem;">{{ student.roll_number }}</span>
+          </td>
+          <td>{{ student.department or 'N/A' }}</td>
+          <td>{{ student.semester or 'N/A' }}</td>
+          <td>{{ student.phone or 'N/A' }}</td>
+          <td style="font-size: 0.82rem; color: var(--text-muted);">
+            {{ student.student_type }}: {{ student.address or 'N/A' }}
+          </td>
+          <td style="font-weight: 800; color: var(--primary-accent); text-align: center;">
+            {{ student.total_orders }}
+          </td>
+          <td style="font-size: 0.8rem; color: var(--text-muted);">
+            {{ student.last_order or 'Never' }}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+            No registered students found.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

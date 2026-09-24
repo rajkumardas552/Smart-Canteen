@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ item.name }} | Smart Canteen{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+  
+  <div style="margin-bottom: 1.2rem;">
+    <a href="{{ url_for('menu') }}" class="icon-btn" title="Back to Menu">
+      <i class="fa-solid fa-arrow-left"></i>
+    </a>
+  </div>
+
+  <div class="glass-card" style="overflow: hidden; padding: 0;">
+    
+    <!-- Image Header -->
+    <div style="width: 100%; height: 320px; position: relative; overflow: hidden;">
+      <img src="{{ item.image_url }}" alt="{{ item.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+      <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(16, 24, 32, 0.95) 0%, transparent 60%);"></div>
+      
+      <div style="position: absolute; bottom: 20px; left: 25px; right: 25px;">
+        <span class="veg-badge {% if item.is_veg %}veg{% else %}non-veg{% endif %}" style="position: static; display: inline-flex; margin-bottom: 0.6rem;">
+          <i class="fa-solid fa-circle" style="font-size: 8px;"></i>
+          {% if item.is_veg %}Vegetarian{% else %}Non-Vegetarian{% endif %}
+        </span>
+        <h1 style="font-size: 2rem; font-weight: 800;">{{ item.name }}</h1>
+      </div>
+    </div>
+
+    <!-- Details Body -->
+    <div style="padding: 2rem;">
+      
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1.2rem; border-bottom: 1px solid var(--glass-border);">
+        <div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: var(--primary-accent);">
+            ₹<span id="display-price">{{ '%.0f'|format(item.price) }}</span>
+          </div>
+          <div style="font-size: 0.85rem; color: var(--text-muted);">Base Price</div>
+        </div>
+
+        <div style="display: flex; gap: 1rem;">
+          <div style="background: rgba(255, 255, 255, 0.06); padding: 0.6rem 1rem; border-radius: 12px; border: 1px solid var(--glass-border); text-align: center;">
+            <div class="rating-badge" style="justify-content: center; font-size: 1rem;">
+              <i class="fa-solid fa-star"></i> {{ item.rating }}
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">Rating</div>
+          </div>
+          <div style="background: rgba(255, 255, 255, 0.06); padding: 0.6rem 1rem; border-radius: 12px; border: 1px solid var(--glass-border); text-align: center;">
+            <div style="font-weight: 700; color: var(--text-primary); font-size: 0.95rem;">
+              <i class="fa-solid fa-clock" style="color: var(--primary-accent);"></i> {{ item.prep_time }}
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">Prep Time</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 1.8rem;">
+        <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem;">Description</h3>
+        <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">{{ item.description }}</p>
+      </div>
+
+      <!-- Quantity Selector -->
+      <div style="margin-bottom: 1.8rem; display: flex; align-items: center; justify-content: space-between;" class="glass-card" style="padding: 1rem;">
+        <span style="font-weight: 700;">Quantity</span>
+        <div class="qty-control" style="transform: scale(1.15);">
+          <button type="button" class="qty-btn" id="btn-minus">-</button>
+          <span class="qty-val" id="qty-val">1</span>
+          <button type="button" class="qty-btn" id="btn-plus">+</button>
+        </div>
+      </div>
+
+      <!-- Add-ons Selection -->
+      <div style="margin-bottom: 1.8rem;">
+        <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.8rem;">Optional Add-ons</h3>
+        
+        <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+          
+          <label class="glass-card" style="padding: 0.9rem 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: space-between; margin: 0;">
+            <div style="display: flex; align-items: center; gap: 0.8rem;">
+              <input type="checkbox" class="addon-checkbox" value="Extra Cheese" data-price="10">
+              <span style="font-weight: 600;">Extra Cheese</span>
+            </div>
+            <span style="font-weight: 700; color: var(--primary-accent);">+₹10</span>
+          </label>
+
+          <label class="glass-card" style="padding: 0.9rem 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: space-between; margin: 0;">
+            <div style="display: flex; align-items: center; gap: 0.8rem;">
+              <input type="checkbox" class="addon-checkbox" value="Extra Sauce" data-price="5">
+              <span style="font-weight: 600;">Extra Sauce</span>
+            </div>
+            <span style="font-weight: 700; color: var(--primary-accent);">+₹5</span>
+          </label>
+
+          <label class="glass-card" style="padding: 0.9rem 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: space-between; margin: 0;">
+            <div style="display: flex; align-items: center; gap: 0.8rem;">
+              <input type="checkbox" class="addon-checkbox" value="Extra Paneer" data-price="20">
+              <span style="font-weight: 600;">Extra Paneer</span>
+            </div>
+            <span style="font-weight: 700; color: var(--primary-accent);">+₹20</span>
+          </label>
+
+        </div>
+      </div>
+
+      <!-- Special Instructions -->
+      <div class="form-group" style="margin-bottom: 2rem;">
+        <label class="form-label" for="instructions">Special Instructions</label>
+        <textarea id="instructions" class="form-control" rows="2" placeholder="Add cooking instructions (e.g. make it extra spicy, no onions)..."></textarea>
+      </div>
+
+      <!-- Add to Cart CTA -->
+      <button type="button" id="btn-add-to-cart-detail" class="btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem; margin-bottom: 2rem;">
+        Add to Cart • ₹<span id="btn-total-price">{{ '%.0f'|format(item.price) }}</span>
+      </button>
+
+      <!-- Student Reviews & Rating Section -->
+      <div style="border-top: 1px solid var(--card-border); padding-top: 1.8rem;">
+        <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+          <i class="fa-solid fa-star" style="color: var(--primary-accent);"></i> Student Reviews & Ratings ({{ reviews|length if reviews else 0 }})
+        </h3>
+
+        <!-- Add Review Form -->
+        <div class="solid-card" style="padding: 1.25rem; margin-bottom: 1.5rem; background: var(--card-elevated);">
+          <h4 style="font-size: 0.95rem; font-weight: 800; margin-bottom: 0.6rem;">Write a Campus Review</h4>
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 0.8rem; font-size: 1.3rem; color: #FBBF24;">
+            <i class="fa-solid fa-star review-star" onclick="setReviewRating(1)" style="cursor: pointer;"></i>
+            <i class="fa-solid fa-star review-star" onclick="setReviewRating(2)" style="cursor: pointer;"></i>
+            <i class="fa-solid fa-star review-star" onclick="setReviewRating(3)" style="cursor: pointer;"></i>
+            <i class="fa-solid fa-star review-star" onclick="setReviewRating(4)" style="cursor: pointer;"></i>
+            <i class="fa-solid fa-star review-star" onclick="setReviewRating(5)" style="cursor: pointer;"></i>
+          </div>
+          <input type="hidden" id="review-rating-val" value="5">
+          <textarea id="review-comment" class="form-control" rows="2" placeholder="Tell other students how hot, fresh & tasty this food was..."></textarea>
+          <button type="button" onclick="submitReview({{ item.id }})" class="btn-primary btn-sm" style="margin-top: 0.8rem;">
+            Submit Review <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </div>
+
+        <!-- Live Reviews List -->
+        <div style="display: flex; flex-direction: column; gap: 0.85rem;" id="reviews-list">
+          {% if reviews %}
+            {% for r in reviews %}
+            <div class="solid-card" style="padding: 1rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+                <span style="font-weight: 800; font-size: 0.9rem; color: var(--text-primary);">{{ r.student_name }}</span>
+                <span style="font-size: 0.75rem; color: #FBBF24; font-weight: 800;">★ {{ r.rating }}/5</span>
+              </div>
+              <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.4;">{{ r.comment }}</p>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 1.5rem 0;">
+              No reviews yet. Be the first student to review this item!
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const basePrice = {{ item.price }};
+  let quantity = 1;
+
+  function calculateTotal() {
+    let addonTotal = 0;
+    document.querySelectorAll('.addon-checkbox:checked').forEach(cb => {
+      addonTotal += parseFloat(cb.getAttribute('data-price') || 0);
+    });
+    const total = (basePrice + addonTotal) * quantity;
+    document.getElementById('btn-total-price').textContent = total.toFixed(0);
+  }
+
+  document.getElementById('btn-plus').addEventListener('click', () => {
+    quantity++;
+    document.getElementById('qty-val').textContent = quantity;
+    calculateTotal();
+  });
+
+  document.getElementById('btn-minus').addEventListener('click', () => {
+    if (quantity > 1) {
+      quantity--;
+      document.getElementById('qty-val').textContent = quantity;
+      calculateTotal();
+    }
+  });
+
+  document.querySelectorAll('.addon-checkbox').forEach(cb => {
+    cb.addEventListener('change', calculateTotal);
+  });
+
+  document.getElementById('btn-add-to-cart-detail').addEventListener('click', () => {
+    const addons = [];
+    document.querySelectorAll('.addon-checkbox:checked').forEach(cb => {
+      addons.push(cb.value);
+    });
+    const instructions = document.getElementById('instructions').value;
+    
+    addToCart({{ item.id }}, quantity, addons, instructions);
+  });
+</script>
+{% endblock %}
