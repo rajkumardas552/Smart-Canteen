@@ -91,7 +91,7 @@
 
           <div class="form-group" style="margin-bottom: 0;">
             <label class="form-label" for="phone">Phone Number (For Order SMS / Notifications)</label>
-            <input type="tel" id="phone" name="phone" class="form-control" value="{{ student.phone if student and student.phone else '9876543210' }}" required placeholder="+91 9876543210" style="font-weight: 700;">
+            <input type="tel" id="phone" name="phone" class="form-control" value="{{ student.phone if student and student.phone else '' }}" required placeholder="Enter Phone Number (e.g. 9876543210)" style="font-weight: 700;">
           </div>
         </div>
 
