@@ -458,7 +458,8 @@
         }
       };
 
-      if (orderData.is_real_order && orderData.order_id) {
+      // Attach order_id only for verified live production orders
+      if (orderData.is_real_order && orderData.order_id && orderData.key_id && !orderData.key_id.startsWith('rzp_test_')) {
         options.order_id = orderData.order_id;
       }
 
