@@ -1,7 +1,10 @@
+import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
 import database
 import random
-import os
 import re
 import hmac
 import hashlib
