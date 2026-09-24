@@ -364,6 +364,8 @@ def create_razorpay_order():
 
     # Try creating order via Razorpay SDK if live key provided
     rzp_order_id = f"order_{hashlib.md5(rand_order_num.encode()).hexdigest()[:14]}"
+    is_real_order = False
+
     if razorpay_client and Config.RAZORPAY_KEY_ID and not Config.RAZORPAY_KEY_ID.startswith('rzp_test_SmartCanteen'):
         try:
             rzp_order = razorpay_client.order.create({
@@ -376,6 +378,7 @@ def create_razorpay_order():
                 }
             })
             rzp_order_id = rzp_order['id']
+            is_real_order = True
         except Exception as e:
             print("Razorpay API order create fallback:", e)
 
@@ -385,6 +388,7 @@ def create_razorpay_order():
         'status': 'success',
         'key_id': Config.RAZORPAY_KEY_ID,
         'order_id': rzp_order_id,
+        'is_real_order': is_real_order,
         'amount': amount_in_paise,
         'currency': 'INR',
         'canteen_name': Config.CANTEEN_NAME,
